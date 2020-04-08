@@ -53,9 +53,12 @@ TalkActionResult_t Spells::playerSaySpell(Player* player, std::string& words, co
 			if (instantWords.back() == '"') {
 				instantWords.pop_back();
 			}
-			param = instantWords.substr(param_find + 1);
-			instantWords = instantWords.substr(0, param_find);
-			trim_right(instantWords, ' ');
+			
+			if (param_find < instantWords.size()) {
+				param = instantWords.substr(param_find + 1);
+				instantWords = instantWords.substr(0, param_find);
+				trim_right(instantWords, ' ');
+			}
 		}
 	}
 
