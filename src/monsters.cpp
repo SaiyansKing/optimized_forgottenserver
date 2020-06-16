@@ -349,7 +349,8 @@ bool Monsters::deserializeSpell(const pugi::xml_node& node, spellBlock_t& sb, co
 			combat->setParam(COMBAT_PARAM_TYPE, COMBAT_HEALING);
 			combat->setParam(COMBAT_PARAM_AGGRESSIVE, 0);
 		} else if (!tfs_strcmp(tmpName.c_str(), "speed")) {
-			int32_t speedChange = 0;
+			int32_t minSpeedChange = 0;
+			int32_t maxSpeedChange = 0;
 			int32_t duration = 10000;
 
 			if ((attr = node.attribute("duration"))) {
@@ -357,23 +358,40 @@ bool Monsters::deserializeSpell(const pugi::xml_node& node, spellBlock_t& sb, co
 			}
 
 			if ((attr = node.attribute("speedchange"))) {
-				speedChange = pugi::cast<int32_t>(attr.value());
-				if (speedChange < -1000) {
-					//cant be slower than 100%
-					speedChange = -1000;
+				minSpeedChange = pugi::cast<int32_t>(attr.value());
+				maxSpeedChange = minSpeedChange;
+			} else if ((attr = node.attribute("minspeedchange"))) {
+				minSpeedChange = pugi::cast<int32_t>(attr.value());
+				maxSpeedChange = pugi::cast<int32_t>(node.attribute("maxspeedchange").value());
+				if (maxSpeedChange == 0) {
+					maxSpeedChange = minSpeedChange; // static speedchange value
 				}
 			}
 
+			//cant be slower than 100%
+			if (minSpeedChange < -1000) {
+				minSpeedChange = -1000;
+			}
+			if (maxSpeedChange < -1000) {
+				maxSpeedChange = -1000;
+			}
+
 			ConditionType_t conditionType;
-			if (speedChange > 0) {
-				conditionType = CONDITION_HASTE;
-				combat->setParam(COMBAT_PARAM_AGGRESSIVE, 0);
+			if ((minSpeedChange < 0) == (maxSpeedChange < 0)) {
+				if (minSpeedChange > 0) {
+					conditionType = CONDITION_HASTE;
+					combat->setParam(COMBAT_PARAM_AGGRESSIVE, 0);
+				} else {
+					conditionType = CONDITION_PARALYZE;
+				}
 			} else {
-				conditionType = CONDITION_PARALYZE;
+				std::cout << "[Error - Monsters::deserializeSpell] - " << description << " - can't determine condition type because minSpeedChange/maxSpeedChange sign mismatch" << std::endl;
+				delete combat;
+				return false;
 			}
 
 			ConditionSpeed* condition = static_cast<ConditionSpeed*>(Condition::createCondition(CONDITIONID_COMBAT, conditionType, duration, 0));
-			condition->setFormulaVars(speedChange / 1000.0, 0, speedChange / 1000.0, 0);
+			condition->setFormulaVars(minSpeedChange / 1000.0, 0, maxSpeedChange / 1000.0, 0);
 			combat->addCondition(condition);
 		} else if (!tfs_strcmp(tmpName.c_str(), "outfit")) {
 			int32_t duration = 10000;
@@ -639,31 +657,42 @@ bool Monsters::deserializeSpell(MonsterSpell* spell, spellBlock_t& sb, const std
 			}
 			combat->setParam(COMBAT_PARAM_TYPE, spell->combatType);
 		} else if (!tfs_strcmp(tmpName.c_str(), "speed")) {
-			int32_t speedChange = 0;
+			int32_t minSpeedChange = spell->minSpeedChange;
+			int32_t maxSpeedChange = spell->maxSpeedChange;
 			int32_t duration = 10000;
 
 			if (spell->duration != 0) {
 				duration = spell->duration;
 			}
 
-			if (spell->speedChange != 0) {
-				speedChange = spell->speedChange;
-				if (speedChange < -1000) {
-					//cant be slower than 100%
-					speedChange = -1000;
-				}
+			if (maxSpeedChange == 0) {
+				maxSpeedChange = minSpeedChange; // static speedchange value
+			}
+
+			//cant be slower than 100%
+			if (minSpeedChange < -1000) {
+				minSpeedChange = -1000;
+			}
+			if (maxSpeedChange < -1000) {
+				maxSpeedChange = -1000;
 			}
 
 			ConditionType_t conditionType;
-			if (speedChange > 0) {
-				conditionType = CONDITION_HASTE;
-				combat->setParam(COMBAT_PARAM_AGGRESSIVE, 0);
+			if ((minSpeedChange < 0) == (maxSpeedChange < 0)) {
+				if (minSpeedChange > 0) {
+					conditionType = CONDITION_HASTE;
+					combat->setParam(COMBAT_PARAM_AGGRESSIVE, 0);
+				} else {
+					conditionType = CONDITION_PARALYZE;
+				}
 			} else {
-				conditionType = CONDITION_PARALYZE;
+				std::cout << "[Error - Monsters::deserializeSpell] - " << description << " - can't determine condition type because minSpeedChange/maxSpeedChange sign mismatch" << std::endl;
+				delete spell;
+				return false;
 			}
 
 			ConditionSpeed* condition = static_cast<ConditionSpeed*>(Condition::createCondition(CONDITIONID_COMBAT, conditionType, duration, 0));
-			condition->setFormulaVars(speedChange / 1000.0, 0, speedChange / 1000.0, 0);
+			condition->setFormulaVars(minSpeedChange / 1000.0, 0, maxSpeedChange / 1000.0, 0);
 			combat->addCondition(condition);
 		} else if (!tfs_strcmp(tmpName.c_str(), "outfit")) {
 			int32_t duration = 10000;
@@ -1356,13 +1385,13 @@ MonsterType* Monsters::addMonsterType(const std::string& name)
 
 bool Monsters::loadCallback(LuaScriptInterface* scriptInterface, MonsterType* mType)
 {
-	if (!scriptInterface) {
-		std::cout << "Failure: [Monsters::loadCallback] scriptInterface == nullptr." << std::endl;
+	int32_t id = scriptInterface->getEvent();
+	if (id == -1) {
+		std::cout << "[Warning - MonsterType::loadCallback] Event not found. " << std::endl;
 		return false;
 	}
 
-	int32_t id = scriptInterface->getEvent();
-
+	mType->info.scriptInterface = scriptInterface;
 	if (mType->info.eventType == MONSTERS_EVENT_THINK) {
 		mType->info.thinkEvent = id;
 	} else if (mType->info.eventType == MONSTERS_EVENT_APPEAR) {
@@ -1375,6 +1404,5 @@ bool Monsters::loadCallback(LuaScriptInterface* scriptInterface, MonsterType* mT
 		mType->info.creatureSayEvent = id;
 	}
 
-	scriptInterface->getScriptEnv()->setScriptId(id, scriptInterface);
 	return true;
 }

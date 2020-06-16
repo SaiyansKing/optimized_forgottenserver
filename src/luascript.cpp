@@ -13343,14 +13343,7 @@ int LuaScriptInterface::luaMonsterTypeEventOnCallback(lua_State* L)
 	// monstertype:onThink / onAppear / etc. (callback)
 	MonsterType* mType = getUserdata<MonsterType>(L, 1);
 	if (mType) {
-		LuaScriptInterface* scriptsInterface = &g_scripts->getScriptInterface();
-		if (!g_monsters.scriptInterface) {
-			g_monsters.scriptInterface.reset(scriptsInterface);
-			g_monsters.scriptInterface->initState();
-		}
-
-		mType->info.scriptInterface = g_monsters.scriptInterface.get();
-		if (g_monsters.loadCallback(scriptsInterface, mType)) {
+		if (g_monsters.loadCallback(getScriptEnv()->getScriptInterface(), mType)) {
 			pushBoolean(L, true);
 			return 1;
 		}
@@ -13722,7 +13715,11 @@ int LuaScriptInterface::luaLootSetId(lua_State* L)
 			item = Item::items.getItemIdByName(getString(L, 2));
 			loot->lootBlock.id = item;
 		}
-		pushBoolean(L, true);
+		if (Item::items[loot->lootBlock.id].id == 0) {
+			pushBoolean(L, false);
+		} else {
+			pushBoolean(L, true);
+		}
 	} else {
 		lua_pushnil(L);
 	}
@@ -14019,10 +14016,11 @@ int LuaScriptInterface::luaMonsterSpellSetConditionDamage(lua_State* L)
 
 int LuaScriptInterface::luaMonsterSpellSetConditionSpeedChange(lua_State* L)
 {
-	// monsterSpell:setConditionSpeedChange(speed)
+	// monsterSpell:setConditionSpeedChange(minSpeed, maxSpeed)
 	MonsterSpell* spell = getUserdata<MonsterSpell>(L, 1);
 	if (spell) {
-		spell->speedChange = getNumber<int32_t>(L, 2);
+		spell->minSpeedChange = getNumber<int32_t>(L, 2);
+		spell->maxSpeedChange = getNumber<int32_t>(L, 3, 0);
 		pushBoolean(L, true);
 	} else {
 		lua_pushnil(L);

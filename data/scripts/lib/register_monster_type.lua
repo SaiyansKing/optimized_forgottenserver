@@ -70,28 +70,28 @@ registerMonsterType.corpse = function(mtype, mask)
 end
 registerMonsterType.flags = function(mtype, mask)
 	if mask.flags then
-		if mask.flags.attackable then
+		if mask.flags.attackable ~= nil then
 			mtype:isAttackable(mask.flags.attackable)
 		end
-		if mask.flags.healthHidden then
+		if mask.flags.healthHidden ~= nil then
 			mtype:isHealthHidden(mask.flags.healthHidden)
 		end
-		if mask.flags.convinceable then
+		if mask.flags.convinceable ~= nil then
 			mtype:isConvinceable(mask.flags.convinceable)
 		end
-		if mask.flags.illusionable then
+		if mask.flags.illusionable ~= nil then
 			mtype:isIllusionable(mask.flags.illusionable)
 		end
-		if mask.flags.hostile then
+		if mask.flags.hostile ~= nil then
 			mtype:isHostile(mask.flags.hostile)
 		end
-		if mask.flags.pushable then
+		if mask.flags.pushable ~= nil then
 			mtype:isPushable(mask.flags.pushable)
 		end
-		if mask.flags.canPushItems then
+		if mask.flags.canPushItems ~= nil then
 			mtype:canPushItems(mask.flags.canPushItems)
 		end
-		if mask.flags.canPushCreatures then
+		if mask.flags.canPushCreatures ~= nil then
 			mtype:canPushCreatures(mask.flags.canPushCreatures)
 		end
 		if mask.flags.targetDistance then
@@ -100,15 +100,18 @@ registerMonsterType.flags = function(mtype, mask)
 		if mask.flags.staticAttackChance then
 			mtype:staticAttackChance(mask.flags.staticAttackChance)
 		end
+
+		--if a monster can push creatures,
+		-- it should not be pushable
+		if mask.flags.canPushCreatures then
+			mtype:isPushable(false)
+		end
 	end
 end
 registerMonsterType.light = function(mtype, mask)
 	if mask.light then
-		if mask.light.color then
-			local color = mask.light.color
-		end
-		if mask.light.level then
-			mtype:light(color, mask.light.level)
+		if mask.light.color and mask.light.level then
+			mtype:light(mask.light.color, mask.light.level)
 		end
 	end
 end
@@ -123,40 +126,45 @@ registerMonsterType.changeTarget = function(mtype, mask)
 	end
 end
 registerMonsterType.voices = function(mtype, mask)
-	if type(mask.voices) == "table" then
-		local interval; local chance;
+	if mask.voices ~= nil then
+		local interval, chance
 		if mask.voices.interval then
 			interval = mask.voices.interval
 		end
 		if mask.voices.chance then
 			chance = mask.voices.chance
 		end
-		for k, v in pairs(mask.voices) do
-			if type(v) == "table" then
-				mtype:addVoice(v.text, interval, chance, v.yell)
-			end
+		for i = 1, #mask.voices do
+			local voice = mask.voices[i]
+			mtype:addVoice(voice.text, interval, chance, voice.yell)
 		end
 	end
 end
 registerMonsterType.summons = function(mtype, mask)
-	if type(mask.summons) == "table" then
-		for k, v in pairs(mask.summons) do
-			mtype:addSummon(v.name, v.interval, v.chance)
+	if mask.summons ~= nil then
+		for i = 1, #mask.summons do
+			local summon = mask.summons[i]
+			mtype:addSummon(summon.name, summon.interval, summon.chance)
 		end
 	end
 end
 registerMonsterType.events = function(mtype, mask)
-	if type(mask.events) == "table" then
-		for k, v in pairs(mask.events) do
-			mtype:registerEvent(v)
+	if mask.events ~= nil then
+		for i = 1, #mask.events do
+			mtype:registerEvent(mask.events[i])
 		end
 	end
 end
 registerMonsterType.loot = function(mtype, mask)
-	if type(mask.loot) == "table" then
-		for _, loot in pairs(mask.loot) do
+	if mask.loot ~= nil then
+		local lootError = 0
+		for i = 1, #mask.loot do
+			local loot = mask.loot[i]
 			local parent = Loot()
-			parent:setId(loot.id)
+			if not parent:setId(loot.id) then
+				lootError = loot.id
+				break
+			end
 			if loot.chance then
 				parent:setChance(loot.chance)
 			end
@@ -172,10 +180,14 @@ registerMonsterType.loot = function(mtype, mask)
 			if loot.text or loot.description then
 				parent:setDescription(loot.text or loot.description)
 			end
-			if loot.child then
-				for _, children in pairs(loot.child) do
+			if loot.child ~= nil then
+				for j = 1, #loot.child do
+					local children = loot.child[j]
 					local child = Loot()
-					child:setId(children.id)
+					if not child:setId(children.id) then
+						lootError = loot.id
+						break
+					end
 					if children.chance then
 						child:setChance(children.chance)
 					end
@@ -193,14 +205,21 @@ registerMonsterType.loot = function(mtype, mask)
 					end
 					parent:addChildLoot(child)
 				end
+				if lootError ~= 0 then
+					break
+				end
 			end
 			mtype:addLoot(parent)
+		end
+		if lootError ~= 0 then
+			print("[Error - loot] Monster: \"".. mtype:name() .. "\" loot item: \"" .. lootError .. "\" does not exist.")
 		end
 	end
 end
 registerMonsterType.elements = function(mtype, mask)
-	if type(mask.elements) == "table" then
-		for _, element in pairs(mask.elements) do
+	if mask.elements ~= nil then
+		for i = 1, #mask.elements do
+			local element = mask.elements[i]
 			if element.type and element.percent then
 				mtype:addElement(element.type, element.percent)
 			end
@@ -208,8 +227,9 @@ registerMonsterType.elements = function(mtype, mask)
 	end
 end
 registerMonsterType.immunities = function(mtype, mask)
-	if type(mask.immunities) == "table" then
-		for _, immunity in pairs(mask.immunities) do
+	if mask.immunities ~= nil then
+		for i = 1, #mask.immunities do
+			local immunity = mask.immunities[i]
 			if immunity.type and immunity.combat then
 				mtype:combatImmunities(immunity.type)
 			end
@@ -220,8 +240,9 @@ registerMonsterType.immunities = function(mtype, mask)
 	end
 end
 registerMonsterType.attacks = function(mtype, mask)
-	if type(mask.attacks) == "table" then
-		for _, attack in pairs(mask.attacks) do
+	if mask.attacks ~= nil then
+		for i = 1, #mask.attacks do
+			local attack = mask.attacks[i]
 			local spell = MonsterSpell()
 			if attack.name then
 				if attack.name == "melee" then
@@ -275,7 +296,11 @@ registerMonsterType.attacks = function(mtype, mask)
 						spell:setConditionDuration(attack.duration)
 					end
 					if attack.speed then
-						spell:setConditionSpeedChange(attack.speed)
+						if type(attack.speed) == "table" then
+							spell:setConditionSpeedChange(attack.speed.min, attack.speed.max)
+						else
+							spell:setConditionSpeedChange(attack.speed)
+						end
 					end
 					if attack.target then
 						spell:setNeedTarget(attack.target)
@@ -327,15 +352,16 @@ registerMonsterType.attacks = function(mtype, mask)
 	end
 end
 registerMonsterType.defenses = function(mtype, mask)
-	if type(mask.defenses) == "table" then
+	if mask.defenses ~= nil then
 		if mask.defenses.defense then
 			mtype:defense(mask.defenses.defense)
 		end
 		if mask.defenses.armor then
 			mtype:armor(mask.defenses.armor)
 		end
-		for _, defense in pairs(mask.defenses) do
-			if type(defense) == "table" then
+		for i = 1, #mask.defenses do
+			local defense = mask.defenses[i]
+			if defense ~= nil then
 				local spell = MonsterSpell()
 				if defense.name then
 					if defense.name == "melee" then
@@ -389,7 +415,11 @@ registerMonsterType.defenses = function(mtype, mask)
 							spell:setConditionDuration(defense.duration)
 						end
 						if defense.speed then
-							spell:setConditionSpeedChange(defense.speed)
+							if type(defense.speed) == "table" then
+								spell:setConditionSpeedChange(defense.speed.min, defense.speed.max)
+							else
+								spell:setConditionSpeedChange(defense.speed)
+							end
 						end
 						if defense.target then
 							spell:setNeedTarget(defense.target)
