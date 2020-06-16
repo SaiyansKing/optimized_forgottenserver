@@ -38,7 +38,7 @@ uint64_t Scheduler::addEvent(SchedulerTask* task)
 	io_service.post(
 	#endif
 	[this, task]() {
-		auto res = eventIds.emplace(task->getEventId(), io_service);
+		auto res = eventIds.emplace(std::piecewise_construct, std::forward_as_tuple(task->getEventId()), std::forward_as_tuple(io_service));
 
 		boost::asio::deadline_timer& timer = res.first->second;
 		timer.expires_from_now(boost::posix_time::milliseconds(task->getDelay()));

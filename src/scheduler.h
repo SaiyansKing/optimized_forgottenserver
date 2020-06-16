@@ -21,7 +21,6 @@
 #define FS_SCHEDULER_H_2905B3D5EAB34B4BA8830167262D2DC1
 
 #include "tasks.h"
-#include <unordered_map>
 #include <atomic>
 
 #include "thread_holder_base.h"
@@ -65,7 +64,7 @@ class Scheduler : public ThreadHolder<Scheduler>
 	private:
 		std::thread thread;
 		std::atomic<uint64_t> lastEventId {0};
-		std::unordered_map<uint64_t, boost::asio::deadline_timer> eventIds;
+		std::map<uint64_t, boost::asio::deadline_timer> eventIds;
 		boost::asio::io_service io_service;
 		boost::asio::io_service::work work{ io_service };
 };
