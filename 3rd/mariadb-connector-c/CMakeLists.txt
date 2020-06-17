@@ -1,0 +1,6 @@
+set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
+set(CMAKE_POLICY_DEFAULT_CMP0048 NEW)
+set(WITH_SSL OFF)
+set(INSTALL_PLUGINDIR_DEFAULT "lib/mariadb/plugin")
+add_subdirectory(${CANARY_EXTERNAL_PATH}/mariadb-connector-c
+                ${CANARY_EXTERNAL_OUTPUT_DIRECTORY}/mariadb-connector-c)

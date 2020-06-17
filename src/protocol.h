@@ -20,7 +20,7 @@
 #ifndef FS_PROTOCOL_H_D71405071ACF4137A4B1203899DE80E1
 #define FS_PROTOCOL_H_D71405071ACF4137A4B1203899DE80E1
 
-#include <zlib.h>
+#include "mariadb-connector-c/zlib/zlib.h"
 
 #include "connection.h"
 

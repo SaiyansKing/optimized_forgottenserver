@@ -1,9 +1,18 @@
 image: Visual Studio 2019
 
-shallow_clone: true
-
-# set clone depth
-clone_depth: 1
+clone_script:
+- ps: >-
+    if(-not $env:APPVEYOR_PULL_REQUEST_NUMBER) {
+      git clone -q --branch=$env:APPVEYOR_REPO_BRANCH https://github.com/$env:APPVEYOR_REPO_NAME.git $env:APPVEYOR_BUILD_FOLDER
+      cd $env:APPVEYOR_BUILD_FOLDER
+      git checkout -qf $env:APPVEYOR_REPO_COMMIT
+    } else {
+      git clone -q https://github.com/$env:APPVEYOR_REPO_NAME.git $env:APPVEYOR_BUILD_FOLDER
+      cd $env:APPVEYOR_BUILD_FOLDER
+      git fetch -q origin +refs/pull/$env:APPVEYOR_PULL_REQUEST_NUMBER/merge:
+      git checkout -qf FETCH_HEAD
+    }
+- cmd: git submodule update --init --recursive
 
 platform:
   - x64
@@ -19,7 +28,7 @@ only_commits:
   files:
     - src/
     - vc14/
-    - .appveyor.yml 
+    - .appveyor.yml
 
 install:
   - cmd : vcpkg install boost-asio:x64-windows
@@ -28,14 +37,12 @@ install:
   - cmd : vcpkg install boost-lockfree:x64-windows
   - cmd : vcpkg install boost-system:x64-windows
   - cmd : vcpkg install boost-variant:x64-windows
-  - cmd : vcpkg install cryptopp:x64-windows
-  - cmd : vcpkg install libmariadb:x64-windows
-  - cmd : vcpkg install luajit:x64-windows
+  - cmd : vcpkg install lua:x64-windows
   - cmd : vcpkg install mpir:x64-windows
-  - cmd : vcpkg install pugixml:x64-windows
 
 build:
   parallel: true
+  project: vc14/canary-server.sln
   # MSBuild verbosity level
   # verbosity: detailed
 

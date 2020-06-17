@@ -4,50 +4,64 @@ on:
   push:
     branches:
       - master
+      - develop
       - v*
 
     tags:
       - v*
-
-    paths:
-      - cmake/**
-      - src/**
-      - CMakeLists.txt
 
   pull_request:
     paths:
       - cmake/**
       - src/**
       - CMakeLists.txt
+      - .github/**
 
 jobs:
-  build-ubuntu:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+  job:
+    name: ${{ matrix.os }}-${{ matrix.buildtype }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04]
+        buildtype: [Debug, Release]
+
     steps:
-      - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
 
-      - name: Install dependencies
-        run: >
-          sudo apt-get install git cmake build-essential libluajit-5.1-dev libgmp3-dev libmysqlclient-dev
-          libboost-date-time-dev libboost-system-dev libboost-iostreams-dev libboost-filesystem-dev
-          libpugixml-dev libcrypto++-dev zlib1g-dev
+    - name: Install Dependencies
+      run: >
+        sudo apt-get update && sudo apt-get install cmake build-essential
+        liblua5.2-dev libmysqlclient-dev libboost-system-dev
+        libboost-iostreams-dev libboost-filesystem-dev libpugixml-dev
+        libboost-date-time-dev zip
 
-      - name: Build with cmake
-        uses: ashutoshvarma/action-cmake-build@master
-        with:
-          build-dir: ${{ runner.workspace }}/build
-          # will set the CC & CXX for cmake
-          cc: gcc
-          cxx: g++
-          build-type: Release
-          # Extra options pass to cmake while configuring project
-          configure-options: -DUSE_LUAJIT=on
-          # run build using '-j [parallel]' to use multiple threads to build
-          parallel: 2
+    - name: Prepare build Environment
+      run: |
+        mkdir build && cd build
+        cmake -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} ..
 
-      - name: Upload binary
-        uses: actions/upload-artifact@v2
-        with:
-          name: ubuntu-tfs-amd64-${{ github.sha }}
-          path: ${{ runner.workspace }}/build/tfs
+    - name: Build
+      run: |
+        cd build
+        make -j `nproc`
+        mv bin/canary ../
+
+    - name: Clean workspace
+      shell: bash
+      run: find . -maxdepth 1 ! -name data ! -name config.lua.dist ! -name key.pem ! -name LICENSE ! -name README.md ! -name schema.sql -exec rm -r {} \;
+
+    - name: Prepare datapack contents
+      shell: bash
+      run: |
+        mv config.lua.dist config.lua
+        cd ..
+        zip -r canary.zip canary-server
+
+    - name: Upload binary
+      uses: actions/upload-artifact@v2
+      with:
+        name: canary-${{ matrix.os }}-amd64-${{ matrix.buildtype }}-${{ github.sha }}
+        path: ${{ runner.workspace }}/canary.zip

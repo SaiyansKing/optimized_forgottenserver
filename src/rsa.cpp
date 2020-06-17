@@ -1,6 +1,6 @@
 /**
  * The Forgotten Server - a free and open-source MMORPG server emulator
- * Copyright (C) 2020  Mark Samman <mark.samman@gmail.com>
+ * Copyright (C) 2019  Mark Samman <mark.samman@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,89 +21,63 @@
 
 #include "rsa.h"
 
-RSA::RSA()
+#include <cryptopp/base64.h>
+#include <cryptopp/osrng.h>
+
+#include <fstream>
+#include <sstream>
+
+static CryptoPP::AutoSeededRandomPool prng;
+
+void RSA::decrypt(char* msg) const
 {
-	mpz_init(n);
-	mpz_init2(d, 1024);
+	try
+	{
+		CryptoPP::Integer m{reinterpret_cast<uint8_t *>(msg), 128};
+		auto c = pk.CalculateInverse(prng, m);
+		c.Encode(reinterpret_cast<uint8_t *>(msg), 128);
+	}
+	catch (const CryptoPP::Exception &e)
+	{
+		std::cout << "[RSA::decrypt - Exception]" << e.GetWhat() << std::endl;
+		return;
+	}
 }
 
-RSA::~RSA()
+static const std::string header = "-----BEGIN RSA PRIVATE KEY-----";
+static const std::string footer = "-----END RSA PRIVATE KEY-----";
+
+void RSA::loadPEM(const std::string& filename)
 {
-	mpz_clear(n);
-	mpz_clear(d);
-}
+	std::ifstream file{filename};
 
-void RSA::queryNanD(const char* pString, const char* qString)
-{
-	mpz_t p, q, e, n_1, d_1;
-	mpz_init2(p, 1024);
-	mpz_init2(q, 1024);
-	mpz_init(e);
+	std::ostringstream oss;
+	for (std::string line; std::getline(file, line); oss << line);
+	std::string key = oss.str();
 
-	mpz_set_str(p, pString, 10);
-	mpz_set_str(q, qString, 10);
+	if (key.substr(0, header.size()) != header) {
+		throw std::runtime_error("Missing RSA private key header.");
+	}
 
-	// e = 65537
-	mpz_set_ui(e, 65537);
+	if (key.substr(key.size() - footer.size(), footer.size()) != footer) {
+		throw std::runtime_error("Missing RSA private key footer.");
+	}
 
-	// n = p * q
-	mpz_mul(n_1, p, q);
+	key = key.substr(header.size(), key.size() - footer.size());
 
-	mpz_t p_1, q_1, pq_1;
-	mpz_init2(p_1, 1024);
-	mpz_init2(q_1, 1024);
-	mpz_init2(pq_1, 1024);
+	CryptoPP::ByteQueue queue;
+	CryptoPP::Base64Decoder decoder;
+	decoder.Attach(new CryptoPP::Redirector(queue));
+	decoder.Put(reinterpret_cast<const uint8_t*>(key.c_str()), key.size());
+	decoder.MessageEnd();
 
-	mpz_sub_ui(p_1, p, 1);
-	mpz_sub_ui(q_1, q, 1);
+	try {
+		pk.BERDecodePrivateKey(queue, false, queue.MaxRetrievable());
 
-	// pq_1 = (p -1)(q - 1)
-	mpz_mul(pq_1, p_1, q_1);
-
-	// d = e^-1 mod (p - 1)(q - 1)
-	mpz_invert(d_1, e, pq_1);
-
-	mpz_clear(p_1);
-	mpz_clear(q_1);
-	mpz_clear(pq_1);
-
-	mpz_clear(p);
-	mpz_clear(q);
-	mpz_clear(e);
-
-	void(*freefunc)(void *, size_t);
-	mp_get_memory_functions(NULL, NULL, &freefunc);
-
-	char* tmp = mpz_get_str(NULL, 10, n_1);
-	std::cout << "nString: " << tmp << std::endl;
-	freefunc(tmp, strlen(tmp)+1);
-
-	tmp = mpz_get_str(NULL, 10, d_1);
-	std::cout << "dString: " << tmp << std::endl;
-	freefunc(tmp, strlen(tmp)+1);
-}
-
-void RSA::setKey(const char* nString, const char* dString)
-{
-	mpz_set_str(n, nString, 10);
-	mpz_set_str(d, dString, 10);
-}
-
-void RSA::decrypt(char* msg) const 
-{
-	mpz_t c, m;
-	mpz_init2(c, 1024);
-	mpz_init2(m, 1024);
-
-	mpz_import(c, 128, 1, 1, 0, 0, msg);
-
-	// m = c^d mod n
-	mpz_powm(m, c, d, n);
-
-	size_t count = (mpz_sizeinbase(m, 2) + 7) / 8;
-	memset(msg, 0, 128 - count);
-	mpz_export(msg + (128 - count), nullptr, 1, 1, 0, 0, m);
-
-	mpz_clear(c);
-	mpz_clear(m);
+		if (!pk.Validate(prng, 3)) {
+			throw std::runtime_error("RSA private key is not valid.");
+		}
+	} catch (const CryptoPP::Exception& e) {
+		std::cout << e.what() << '\n';
+	}
 }

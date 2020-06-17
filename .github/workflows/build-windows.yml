@@ -1,0 +1,95 @@
+name: Build on Windows
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+      - v*
+
+    tags:
+      - v*
+
+  pull_request:
+    paths:
+      - cmake/**
+      - src/**
+      - CMakeLists.txt
+      - .github/**
+
+jobs:
+  job:
+    name: ${{ matrix.os }}-${{ matrix.buildtype }}
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [windows]
+        buildtype: [Debug, Release]
+        include:
+          - os: windows
+            triplet: x64-windows
+            packages: >
+              boost-asio boost-iostreams boost-system boost-filesystem
+              boost-variant boost-lockfree lua libmariadb pugixml
+              cryptopp
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Unshallow
+        run: git fetch --prune --unshallow
+
+      - name: Get latest CMake
+        # Using 'latest' branch, the latest CMake is installed.
+        uses: lukka/get-cmake@latest
+
+      - name: Windows - remove C:/mysql*
+        run: rm -r -fo C:/mysql-5.7.21-winx64
+        if: contains( matrix.os, 'windows')
+
+      - name: Run vcpkg
+        uses: lukka/run-vcpkg@v2
+        with:
+          vcpkgArguments: ${{ matrix.packages }}
+          vcpkgDirectory: ${{ runner.workspace }}/vcpkg/
+          vcpkgTriplet: ${{ matrix.triplet }}
+          vcpkgGitCommitId: 7db401cb1ef1fc559ec9f9ce814d064c328fd767
+
+      - name: Build with CMake
+        uses: lukka/run-cmake@v2
+        with:
+          useVcpkgToolchainFile: true
+          buildDirectory: ${{ runner.workspace }}/build
+          cmakeBuildType: ${{ matrix.buildtype }}
+
+      - name: dir
+        run: find $RUNNER_WORKSPACE
+        shell: bash
+
+      - name: Create datapack
+        shell: powershell
+        run: |
+          md ${{ runner.workspace }}\canary-server\canary-server
+          Copy-Item ${{ runner.workspace }}\canary-server\config.lua.dist     ${{ runner.workspace }}\canary-server\canary-server
+          Copy-Item ${{ runner.workspace }}\canary-server\key.pem             ${{ runner.workspace }}\canary-server\canary-server
+          Copy-Item ${{ runner.workspace }}\canary-server\LICENSE             ${{ runner.workspace }}\canary-server\canary-server
+          Copy-Item ${{ runner.workspace }}\canary-server\README.md           ${{ runner.workspace }}\canary-server\canary-server
+          Copy-Item ${{ runner.workspace }}\build\bin\canary.exe      ${{ runner.workspace }}\canary-server\canary-server\canary-server.exe
+          get-childitem -path ${{ runner.workspace }}\build -filter *.dll -recurse | copy-item -destination ${{ runner.workspace }}\canary-server\canary-server
+          Copy-Item ${{ runner.workspace }}\canary-server\data -Destination   ${{ runner.workspace }}\canary-server\canary-server\data
+          Copy-Item -Path ${{ runner.workspace }}\canary-server\data\* -Destination ${{ runner.workspace }}\canary-server\canary-server\data -Recurse
+          Compress-Archive -Path ${{ runner.workspace }}\canary-server\canary-server -DestinationPath ${{ runner.workspace }}\canary.zip
+
+      - name: dir
+        run: find $RUNNER_WORKSPACE
+        shell: bash
+
+      - name: Upload datapack
+        uses: actions/upload-artifact@v2
+        with:
+          name: canary-${{ matrix.os }}-${{ matrix.buildtype }}-${{ github.sha }}
+          path: ${{ runner.workspace }}/canary.zip
+        if: contains( matrix.os, 'windows')

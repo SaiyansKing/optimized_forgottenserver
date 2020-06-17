@@ -41,7 +41,7 @@
 
 #include <boost/asio.hpp>
 
-#include <pugixml.hpp>
+#include "pugixml/src/pugixml.hpp"
 #include "simd.h"
 #include "features.h"
 
