@@ -22,7 +22,11 @@
 #include "configmanager.h"
 #include "database.h"
 
-#include <errmsg.h>
+#if __has_include("mysql/errmsg.h")
+    #include <mysql/errmsg.h>
+#else
+    #include <errmsg.h>
+#endif
 
 extern ConfigManager g_config;
 
