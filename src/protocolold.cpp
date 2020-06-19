@@ -51,13 +51,6 @@ void ProtocolOld::onRecvFirstMessage(NetworkMessage& msg)
 		msg.skipBytes(12);
 	}
 
-	if (version <= 760) {
-		std::ostringstream ss;
-		ss << "Only clients with protocol " << CLIENT_VERSION_UPPER << "." << CLIENT_VERSION_LOWER << " allowed!";
-		disconnectClient(ss.str(), version);
-		return;
-	}
-
 	if (!Protocol::RSA_decrypt(msg)) {
 		disconnect();
 		return;
