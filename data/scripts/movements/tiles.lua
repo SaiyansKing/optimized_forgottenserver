@@ -1,6 +1,7 @@
-local increasing = {[416] = 417, [426] = 425, [446] = 447, [3216] = 3217, [3202] = 3215, [11062] = 11063}
-local decreasing = {[417] = 416, [425] = 426, [447] = 446, [3217] = 3216, [3215] = 3202, [11063] = 11062}
+local increasing = {[419] = 420, [431] = 430, [452] = 453, [563] = 564, [549] = 562, [10145] = 10146}
+local decreasing = {[420] = 419, [430] = 431, [453] = 452, [564] = 563, [562] = 549, [10146] = 10145}
 
+-- onStepIn
 local tile = MoveEvent()
 tile:type("stepin")
 
@@ -30,11 +31,7 @@ function tile.onStepIn(creature, item, position, fromPosition)
 		local depotItem = Tile(lookPosition):getItemByType(ITEM_TYPE_DEPOT)
 		if depotItem then
 			local depotItems = creature:getDepotLocker(getDepotId(depotItem:getUniqueId()), true):getItemHoldingCount()
-			if(CLIENT_VERSION >= 940) then
-				depotItems = depotItems - 3
-			else
-				depotItems = depotItems - 1
-			end
+			depotItems = depotItems - 3
 			creature:sendTextMessage(MESSAGE_STATUS_DEFAULT, "Your depot contains " .. depotItems .. " item" .. (depotItems > 1 and "s." or "."))
 			return true
 		end
@@ -49,10 +46,10 @@ function tile.onStepIn(creature, item, position, fromPosition)
 	return true
 end
 
-if(CLIENT_VERSION >= 853) then
-	tile:id(11062)
+for index, value in pairs(increasing) do
+	tile:id(index)
 end
-tile:id(416, 426, 446, 3216)
+
 tile:register()
 
 tile = MoveEvent()
@@ -71,8 +68,8 @@ function tile.onStepOut(creature, item, position, fromPosition)
 	return true
 end
 
-if(CLIENT_VERSION >= 853) then
-	tile:id(11063)
+for index, value in pairs(decreasing) do
+	tile:id(index)
 end
-tile:id(417, 425, 447, 3217)
+
 tile:register()

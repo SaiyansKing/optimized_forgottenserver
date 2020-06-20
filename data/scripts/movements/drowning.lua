@@ -1,7 +1,3 @@
-if(CLIENT_VERSION < 780) then
-	return
-end
-
 local condition = Condition(CONDITION_DROWN)
 condition:setParameter(CONDITION_PARAM_PERIODICDAMAGE, -20)
 condition:setParameter(CONDITION_PARAM_TICKS, -1)
@@ -20,10 +16,7 @@ function drowning.onStepIn(creature, item, position, fromPosition)
 	return true
 end
 
-if(CLIENT_VERSION >= 840) then
-	drowning:id(9671, 9672, 9673, 10019)
-end
-drowning:id(5405, 5406, 5407, 5408, 5409, 5410, 5743, 5744, 5764)
+drowning:id(5404, 5405, 5406, 5407, 5408, 5409, 5743, 5764, 8755, 8756, 8757, 9291)
 drowning:register()
 
 drowning = MoveEvent()
@@ -36,8 +29,5 @@ function drowning.onStepOut(creature, item, position, fromPosition)
 	return true
 end
 
-if(CLIENT_VERSION >= 840) then
-	drowning:id(9671, 9672, 9673, 10019)
-end
-drowning:id(5405, 5406, 5407, 5408, 5409, 5410, 5743, 5744, 5764)
+drowning:id(5404, 5405, 5406, 5407, 5408, 5409, 5743, 5764, 8755, 8756, 8757, 9291)
 drowning:register()

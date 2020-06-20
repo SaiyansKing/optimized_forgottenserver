@@ -136,7 +136,7 @@ function addOffer(player, offer, omsg)
 
 	if(not disabled) then
 		if(offer.type == GameStore.OfferTypes.OFFER_TYPE_POUCH) then
-			local pouch = player:getItemById(26377, true)
+			local pouch = player:getItemById(23721, true)
 			if(pouch) then
 				disabled = true
 				disabledReason = "You already have Gold Pouch."

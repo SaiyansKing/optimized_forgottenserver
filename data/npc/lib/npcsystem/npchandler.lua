@@ -152,8 +152,8 @@ if NpcHandler == nil then
 
 	-- Function used to verify if npc is focused to certain player
 	function NpcHandler:isFocused(focus)
-		for k,v in pairs(self.focuses) do
-			if v == focus then
+		for index, value in pairs(self.focuses) do
+			if value == focus then
 				return true
 			end
 		end
@@ -196,9 +196,9 @@ if NpcHandler == nil then
 		end
 
 		local pos = nil
-		for k,v in pairs(self.focuses) do
-			if v == focus then
-				pos = k
+		for index, value in pairs(self.focuses) do
+			if value == focus then
+				pos = index
 			end
 		end
 		self.focuses[pos] = nil

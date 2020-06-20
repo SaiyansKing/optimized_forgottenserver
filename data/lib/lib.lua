@@ -3,3 +3,6 @@ dofile('data/lib/core/core.lua')
 
 -- Compatibility library for our old Lua API
 dofile('data/lib/compat/compat.lua')
+
+-- Lua table library
+dofile('data/lib/table/table.lua')

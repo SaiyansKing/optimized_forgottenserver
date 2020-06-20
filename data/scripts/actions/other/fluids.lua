@@ -21,6 +21,7 @@ local fluidMessage = {
 	[19] = "Urgh!",
 	[43] = "Aaaah..."
 }
+
 local fluid = Action()
 
 function fluid.onUse(player, item, fromPosition, target, toPosition, isHotkey)
@@ -55,7 +56,7 @@ function fluid.onUse(player, item, fromPosition, target, toPosition, isHotkey)
 			player:say(fluidMessage[item.type] or "Gulp.", TALKTYPE_MONSTER_SAY)
 			item:transform(item:getId(), 0)
 		else
-			Game.createItem(2016, item.type, toPosition):decay()
+			Game.createItem(2886, item.type, toPosition):decay()
 			item:transform(item:getId(), 0)
 		end
 	else
@@ -68,12 +69,12 @@ function fluid.onUse(player, item, fromPosition, target, toPosition, isHotkey)
 			if toPosition.x == CONTAINER_POSITION then
 				toPosition = player:getPosition()
 			end
-			Game.createItem(2016, item.type, toPosition):decay()
+			Game.createItem(2886, item.type, toPosition):decay()
 			item:transform(item:getId(), 0)
 		end
 	end
 	return true
 end
 
-fluid:id(1775, 2005, 2006, 2007, 2008, 2009, 2011, 2012, 2013, 2014, 2015, 2023, 2031, 2032, 2033, 2034, 2562, 2574, 2575, 2576, 2577)
+fluid:id(2524, 2873, 2874, 2875, 2876, 2877, 2879, 2880, 2881, 2882, 2883, 2884, 2885, 2893, 2901, 2902, 2903, 2904, 3477, 3478, 3479, 3480)
 fluid:register()

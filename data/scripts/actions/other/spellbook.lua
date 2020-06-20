@@ -1,26 +1,3 @@
-local spellbooks = {
-	--{itemid, client_version}
-	{34069, 1200}, -- spirit guide
-	{34058, 1200}, -- shoulder plate
-	{29004, 1140}, -- wooden spellbook
-	{25411, 1090}, -- book of lies
-	{23771, 1055}, -- spellbook of the novice
-	{22424, 1030}, -- umbral master spellbook
-	{22423, 1030}, -- umbral spellbook
-	{22422, 1030}, -- crude umbral spellbook
-	{18401, 960}, -- spellbook of vigilance
-	{16112, 960}, -- spellbook of ancient arcana
-	{12647, 860}, -- snake god's wristguard
-	{8918, 820}, -- spellbook of dark mysteries
-	{8904, 820}, -- spellscroll of prophecies
-	{8903, 820}, -- spellbook of lost souls
-	{8902, 820}, -- spellbook of mind control
-	{8901, 820}, -- spellbook of warding
-	{8900, 820}, -- spellbook of enlightenment
-	{6120, 780}, -- Dragha's spellbook
-	{2175, 0} -- spellbook
-}
-
 local spellbook = Action()
 
 function spellbook.onUse(player, item, fromPosition, target, toPosition, isHotkey)
@@ -41,23 +18,19 @@ function spellbook.onUse(player, item, fromPosition, target, toPosition, isHotke
 	for i, spell in ipairs(spells) do
 		if prevLevel ~= spell.level then
 			if i == 1 then
-				text[#text + 1] = "Spells for Level "
+				text[#text == nil and 1 or #text+1] = "Spells for Level "
 			else
-				text[#text + 1] = "\nSpells for Level "
+				text[#text+1] = "\nSpells for Level "
 			end
-			text[#text + 1] = spell.level .. "\n"
+			text[#text+1] = spell.level .. "\n"
 			prevLevel = spell.level
 		end
-		text[#text + 1] = spell.words .. " - " .. spell.name .. " : " .. spell.mana .. "\n"
+		text[#text+1] = spell.words .. " - " .. spell.name .. " : " .. spell.mana .. "\n"
 	end
 
 	player:showTextDialog(item:getId(), table.concat(text))
 	return true
 end
 
-for _, s in ipairs(spellbooks) do
-	if(CLIENT_VERSION >= s[2]) then
-		spellbook:id(s[1])
-	end
-end
+spellbook:id(3059, 6120, 8900, 8901, 8902, 8903, 8904, 8918, 14769, 16107, 20088, 20089, 20090, 21400)
 spellbook:register()

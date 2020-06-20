@@ -1,8 +1,8 @@
 local traps = {
-	[1510] = {transformTo = 1511, damage = {-50, -100}},
-	[1513] = {damage = {-50, -100}},
-	[2579] = {transformTo = 2578, damage = {-15, -30}},
-	[4208] = {transformTo = 4209, damage = {-15, -30}, type = COMBAT_EARTHDAMAGE}
+	[2145] = {transformTo = 2146, damage = {-50, -100}},
+	[2147] = {transformTo = 2148, damage = {-50, -100}},
+	[3481] = {transformTo = 3482, damage = {-15, -30}},
+	[3944] = {transformTo = 3945, damage = {-15, -30}, type = COMBAT_EARTHDAMAGE}
 }
 
 local trap = MoveEvent()
@@ -24,10 +24,7 @@ function trap.onStepIn(creature, item, position, fromPosition)
 	return true
 end
 
-if(CLIENT_VERSION >= 750) then
-	trap:id(4208)
-end
-trap:id(1510, 1513, 2579)
+trap:id(2145, 2147, 3481, 3944)
 trap:register()
 
 trap = MoveEvent()
@@ -38,10 +35,7 @@ function trap.onStepOut(creature, item, position, fromPosition)
 	return true
 end
 
-if(CLIENT_VERSION >= 750) then
-	trap:id(4209)
-end
-trap:id(1511)
+trap:id(2146)
 trap:register()
 
 trap = MoveEvent()

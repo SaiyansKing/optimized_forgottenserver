@@ -5,17 +5,5 @@ function watch.onUse(player, item, fromPosition, target, toPosition, isHotkey)
 	return true
 end
 
-if(CLIENT_VERSION >= 840) then
-	watch:id(9443, 9444)
-end
-if(CLIENT_VERSION >= 810) then
-	watch:id(7828)
-end
-if(CLIENT_VERSION >= 780) then
-	watch:id(6092)
-end
-if(CLIENT_VERSION >= 750) then
-	watch:id(3900)
-end
-watch:id(2036, 1728, 1729, 1730, 1731)
+watch:id(751, 2445, 2446, 2447, 2448, 2906, 2771)
 watch:register()

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<monster name="Target Dummy" nameDescription="a target dummy" race="energy" experience="0" speed="0" manacost="0">
+	<health now="1470000" max="1470000"/>
+	<look type="304" corpse="9801"/>
+	<targetchange interval="1000" chance="50"/>
+	<strategy attack="100" defense="0"/>
+	<flags>
+		<flag summonable="0"/>
+		<flag attackable="1"/>
+		<flag hostile="1"/>
+		<flag illusionable="0"/>
+		<flag convinceable="0"/>
+		<flag pushable="0"/>
+		<flag canpushitems="0"/>
+		<flag canpushcreatures="1"/>
+		<flag targetdistance="1"/>
+		<flag staticattack="90"/>
+		<flag runonhealth="100"/>
+	</flags>
+	<attacks>
+		<attack name="physical" interval="1000" chance="100" radius="3" min="-1" max="-2">
+			<attribute key="areaEffect" value="poff"/>
+		</attack>
+	</attacks>
+	<defenses armor="1" defense="1">
+		<defense name="healing" interval="20" chance="20" min="2250" max="2750">
+			<attribute key="areaEffect" value="blueshimmer"/>
+		</defense>
+	</defenses>
+	<voices interval="2500" chance="25">
+		<voice sentence="N.O.O.B. termination initiated."/>
+		<voice sentence="klonk klonk klonk!"/>
+		<voice sentence="Threat level rising!"/>
+		<voice sentence="Scanning human life form."/>
+		<voice sentence="Danger: Overheating."/>
+	</voices>
+</monster>

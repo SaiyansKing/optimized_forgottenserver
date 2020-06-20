@@ -1,7 +1,3 @@
-if(CLIENT_VERSION < 850) then
-	return
-end
-
 local toolgear = Action()
 
 function toolgear.onUse(player, item, fromPosition, target, toPosition, isHotkey)
@@ -23,5 +19,5 @@ function toolgear.onUse(player, item, fromPosition, target, toPosition, isHotkey
 	return true
 end
 
-toolgear:id(10511, 10513, 10515)
+toolgear:id(9594, 9596, 9598)
 toolgear:register()

@@ -174,7 +174,7 @@ bool Items::reload()
 	clear();
 	items.reserve(30000);
 	reverseItemMap.reserve(30000);
-	loadFromOtb("data/items/" + std::to_string(CLIENT_VERSION) + "/items.otb");
+	loadFromOtb("data/items/items.otb");
 	if (!loadFromXml()) {
 		return false;
 	}
@@ -940,9 +940,9 @@ bool Items::loadFromOtbLegacy(OTB::Loader& loader, const OTB::Node& rootNode)
 bool Items::loadFromXml()
 {
 	pugi::xml_document doc;
-	pugi::xml_parse_result result = doc.load_file(("data/items/" + std::to_string(CLIENT_VERSION) + "/items.xml").c_str());
+	pugi::xml_parse_result result = doc.load_file("data/items/items.xml");
 	if (!result) {
-		printXMLError("Error - Items::loadFromXml", "data/items/" + std::to_string(CLIENT_VERSION) + "/items.xml", result);
+		printXMLError("Error - Items::loadFromXml", "data/items/items.xml", result);
 		return false;
 	}
 

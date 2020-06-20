@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <monsters>
+	<!-- Custom -->
+	<monster name="Target Dummy" file="Custom/target_dummy.xml" />
+
 	<!-- Amazons -->
 	<monster id="77" raceid="11" name="Amazon" file="Amazons/amazon.xml" />
 	<monster id="12" raceid="11" name="Valkyrie" file="Amazons/valkyrie.xml" />
@@ -320,6 +323,7 @@
 	<monster id="728" raceid="5" name="Askarak Lord" file="Demons/askarak_lord.xml" />
 	<monster id="729" raceid="5" name="Askarak Prince" file="Demons/askarak_prince.xml" />
 	<monster id="285" raceid="5" name="Dark Torturer" file="Demons/dark_torturer.xml" />
+	<monster id="1134" raceid="5" name="Dawnfire Asura" file="Demons/dawnfire_asura.xml" />
 	<monster id="35" raceid="5" name="Demon" file="Demons/demon.xml" />
 	<monster id="287" raceid="5" name="Destroyer" file="Demons/destroyer.xml" />
 	<monster id="288" raceid="5" name="Diabolic Imp" file="Demons/diabolic_imp.xml" />
@@ -331,6 +335,7 @@
 	<monster id="294" raceid="5" name="Hellhound" file="Demons/hellhound.xml" />
 	<monster id="519" raceid="5" name="Hellspawn" file="Demons/hellspawn.xml" />
 	<monster id="296" raceid="5" name="Juggernaut" file="Demons/juggernaut.xml" />
+	<monster id="1135" raceid="5" name="Midnight Asura" file="Demons/midnight_asura.xml" />
 	<monster id="518" raceid="14" name="Nightmare Scion" file="Demons/nightmare_scion.xml" />
 	<monster id="299" raceid="14" name="Nightmare" file="Demons/nightmare.xml" />
 	<monster id="520" raceid="14" name="Nightstalker" file="Demons/nightstalker.xml" />

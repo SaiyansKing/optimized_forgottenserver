@@ -1,8 +1,8 @@
-local pickaxe = Action()
+local pick = Action()
 
-function pickaxe.onUse(player, item, fromPosition, target, toPosition, isHotkey)
+function pick.onUse(player, item, fromPosition, target, toPosition, isHotkey)
 	return ActionsLib.usePick(player, item, fromPosition, target, toPosition, isHotkey)
 end
 
-pickaxe:id(2553)
-pickaxe:register()
+pick:id(3456)
+pick:register()

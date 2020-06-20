@@ -20,8 +20,8 @@
 #ifndef FS_DEFINITIONS_H_877452FEC245450C9F96B8FD268D8963
 #define FS_DEFINITIONS_H_877452FEC245450C9F96B8FD268D8963
 
-static constexpr auto STATUS_SERVER_NAME = "The Forgotten Server";
-static constexpr auto STATUS_SERVER_VERSION = "1.0.0 Immortal Phoenix";
+static constexpr auto STATUS_SERVER_NAME = "Canary Server";
+static constexpr auto STATUS_SERVER_VERSION = "1.0.0 Canary";
 static constexpr auto STATUS_SERVER_DEVELOPERS = "Mark Samman and Saiyans King";
 
 static constexpr auto AUTHENTICATOR_DIGITS = 6U;

@@ -1,4 +1,4 @@
-PlayerStorageKeys = {
+Storage = {
 	annihilatorReward = 30015,
 	promotion = 30018,
 	delayLargeSeaShell = 30019,

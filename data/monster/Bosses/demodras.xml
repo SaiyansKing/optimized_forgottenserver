@@ -48,7 +48,7 @@
 		<voice sentence="I WILL PROTECT MY BROOD!" yell="1" />
 	</voices>
 	<loot>
-		<item name="gemmed book" chance="3333" />
+		<item id="2842" chance="3333"/> <!-- book (gemmed) -->
 		<item name="golden mug" chance="1818" />
 		<item name="small sapphire" countmax="2" chance="2222" />
 		<item name="gold coin" countmax="100" chance="100000" />

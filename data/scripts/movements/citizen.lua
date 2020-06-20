@@ -12,5 +12,5 @@ function citizen.onStepIn(creature, item, position, fromPosition)
 	return true
 end
 
-citizen:id(1387)
+citizen:id(1949)
 citizen:register()

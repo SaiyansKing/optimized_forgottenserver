@@ -21,10 +21,10 @@ loginProtocolPort = 7171
 gameProtocolPort = 7172
 statusProtocolPort = 7171
 maxPlayers = 0
-motd = "Welcome to The Forgotten Server!"
+motd = "Welcome to Canary Server!"
 onePlayerOnlinePerAccount = true
 allowClones = false
-serverName = "Forgotten"
+serverName = "Canary"
 statusTimeout = 5000
 replaceKickOnLogin = true
 maxPacketsPerSecond = 25
@@ -56,7 +56,7 @@ timeBetweenExActions = 1000
 
 -- Map
 -- NOTE: set mapName WITHOUT .otbm at the end
-mapName = "forgotten"
+mapName = "canary"
 mapAuthor = "Komic"
 
 -- Market
@@ -67,9 +67,9 @@ maxMarketOffersAtATimePerPlayer = 100
 
 -- MySQL
 mysqlHost = "127.0.0.1"
-mysqlUser = "forgottenserver"
+mysqlUser = "canary"
 mysqlPass = ""
-mysqlDatabase = "forgottenserver"
+mysqlDatabase = "canary"
 mysqlPort = 3306
 mysqlSock = ""
 
@@ -85,7 +85,7 @@ maxMessageBuffer = 4
 emoteSpells = false
 classicEquipmentSlots = false
 classicAttackSpeed = false
-showScriptsLogInConsole = true
+showScriptsLogInConsole = false
 showOnlineStatusInCharlist = false
 yellMinimumLevel = 2
 yellAlwaysAllowPremium = false

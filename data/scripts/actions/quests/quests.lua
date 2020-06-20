@@ -1,4 +1,3 @@
-local annihilatorReward = {1990, 2400, 2431, 2494}
 local quests = Action()
 
 function quests.onUse(player, item, fromPosition, target, toPosition, isHotkey)
@@ -13,16 +12,16 @@ function quests.onUse(player, item, fromPosition, target, toPosition, isHotkey)
 
 	local itemWeight = itemType:getWeight()
 	local playerCap = player:getFreeCapacity()
-	if table.contains(annihilatorReward, item.uid) then
-		if player:getStorageValue(30015) == -1 then
+	if table.contains({1990, 2400, 2431, 2494}, item.uid) then
+		if player:getStorageValue(Storage.annihilatorReward) == -1 then
 			if playerCap >= itemWeight then
 				if item.uid == 1990 then
-					player:addItem(1990, 1):addItem(2326, 1)
+					player:addItem(2856, 1):addItem(3213, 1)
 				else
 					player:addItem(item.uid, 1)
 				end
 				player:sendTextMessage(MESSAGE_INFO_DESCR, 'You have found a ' .. itemType:getName() .. '.')
-				player:setStorageValue(30015, 1)
+				player:setStorageValue(Storage.annihilatorReward, 1)
 			else
 				player:sendTextMessage(MESSAGE_INFO_DESCR, 'You have found a ' .. itemType:getName() .. ' weighing ' .. itemWeight .. ' oz it\'s too heavy.')
 			end
@@ -43,5 +42,5 @@ function quests.onUse(player, item, fromPosition, target, toPosition, isHotkey)
 	return true
 end
 
-quests:id(1740, 1747, 1748, 1749)
+quests:id(2472, 2480, 2481, 2482)
 quests:register()
