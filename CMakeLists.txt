@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
-project(tfs)
+project(canary)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -44,14 +44,27 @@ else()
     find_package(Lua REQUIRED)
 endif()
 
-find_package(Boost 1.53.0 COMPONENTS system filesystem iostreams REQUIRED)
+find_package(Boost 1.65.0 COMPONENTS system filesystem iostreams REQUIRED)
 
 add_subdirectory(src)
-add_executable(tfs ${tfs_SRC})
+add_executable(canary ${CMAKE_CURRENT_SOURCE_DIR}/src/otserv.cpp)
+
+# Create src lib
+add_library(canary_lib ${canary_SRC})
+
+# *****************************************************************************
+# Tests
+# *****************************************************************************
+
+option(PACKAGE_TESTS "Build the tests" OFF)
+if(PACKAGE_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
 
 include_directories(${MYSQL_INCLUDE_DIR} ${LUA_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${PUGIXML_INCLUDE_DIR} ${GMP_INCLUDE_DIR} ${ZLIB_INCLUDE_DIR})
-target_link_libraries(tfs ${MYSQL_CLIENT_LIBS} ${LUA_LIBRARIES} ${Boost_LIBRARIES} ${Boost_FILESYSTEM_LIBRARY} ${PUGIXML_LIBRARIES} ${GMP_LIBRARIES} ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(canary canary_lib ${MYSQL_CLIENT_LIBS} ${LUA_LIBRARIES} ${Boost_LIBRARIES} ${Boost_FILESYSTEM_LIBRARY} ${PUGIXML_LIBRARIES} ${GMP_LIBRARIES} ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
 
-set_target_properties(tfs PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "src/otpch.h")
-set_target_properties(tfs PROPERTIES COTIRE_ADD_UNITY_BUILD FALSE)
-cotire(tfs)
+set_target_properties(canary PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "src/otpch.h")
+set_target_properties(canary PROPERTIES COTIRE_ADD_UNITY_BUILD FALSE)
+cotire(canary)

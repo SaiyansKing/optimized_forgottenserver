@@ -173,9 +173,11 @@ pip-log.txt
 .*.swo
 
 #############
-## TFS / OT
+## Canary / OT
 #############
 config.lua
+canary
+canary_tests
 *.exe
 *.dll
 *.otb
