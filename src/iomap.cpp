@@ -20,9 +20,18 @@
 #include "otpch.h"
 
 #include "iomap.h"
-
-#include <boost/filesystem.hpp>
 #include "bed.h"
+
+#ifdef __cpp_lib_filesystem
+#include <filesystem>
+namespace fs = std::filesystem;
+#elif __cpp_lib_experimental_filesystem
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+#endif
 
 /*
 	OTBM_ROOTV1
@@ -69,7 +78,7 @@ Tile* IOMap::createTile(Item*& ground, Item* item, uint16_t x, uint16_t y, uint8
 
 bool IOMap::loadMap(Map* map, const std::string& fileName)
 {
-	if (!boost::filesystem::exists(fileName)) {
+	if (!fs::exists(fileName)) {
 		setLastErrorString("Failed to load " + fileName + ": File doesn't exist.");
 		return false;
 	}

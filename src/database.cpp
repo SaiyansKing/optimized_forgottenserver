@@ -22,10 +22,18 @@
 #include "configmanager.h"
 #include "database.h"
 
-#if __has_include("mysql/errmsg.h")
-    #include <mysql/errmsg.h>
+#ifdef __has_include
+
+#if __has_include(<mysql/errmsg.h>)
+#include <mysql/errmsg.h>
+#elif __has_include(<errmsg.h>)
+#include <errmsg.h>
 #else
-    #include <errmsg.h>
+#error "Cannot detect mysql library"
+#endif
+
+#else
+#include <errmsg.h>
 #endif
 
 extern ConfigManager g_config;

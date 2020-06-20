@@ -46,6 +46,12 @@ Task* createTask(std::function<void (void)> f);
 
 class Dispatcher : public ThreadHolder<Dispatcher> {
 	public:
+		#if BOOST_VERSION >= 106600
+		Dispatcher() : work(boost::asio::make_work_guard(io_service)) {}
+		#else
+		Dispatcher() : work(std::make_shared<boost::asio::io_service::work>(io_service)) {}
+		#endif
+
 		void addTask(std::function<void (void)> functor);
 		void addTask(Task* task);
 
@@ -61,7 +67,11 @@ class Dispatcher : public ThreadHolder<Dispatcher> {
 		std::thread thread;
 		uint64_t dispatcherCycle = 0;
 		boost::asio::io_service io_service;
-		boost::asio::io_service::work work{ io_service };
+		#if BOOST_VERSION >= 106600
+		boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work;
+		#else
+		std::shared_ptr<boost::asio::io_service::work> work;
+		#endif
 };
 
 extern Dispatcher g_dispatcher;

@@ -85,7 +85,7 @@ void Scheduler::shutdown()
 			it.second.cancel();
 		}
 
-		io_service.stop();
+		work.reset();
 	});
 }
 

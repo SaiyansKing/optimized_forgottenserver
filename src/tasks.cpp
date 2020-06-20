@@ -42,12 +42,21 @@ void Dispatcher::addTask(std::function<void (void)> functor)
 	#else
 	io_service.post(
 	#endif
-	[this, functor]() {
+	#ifdef __cpp_generic_lambdas
+	[this, f = std::move(functor)]() {
+		++dispatcherCycle;
+
+		// execute it
+		(f)();
+	});
+	#else
+		[this, functor]() {
 		++dispatcherCycle;
 
 		// execute it
 		(functor)();
 	});
+	#endif
 }
 
 void Dispatcher::addTask(Task* task)
@@ -75,6 +84,6 @@ void Dispatcher::shutdown()
 	#endif
 	[this]() {
 		setState(THREAD_STATE_TERMINATED);
-		io_service.stop();
+		work.reset();
 	});
 }

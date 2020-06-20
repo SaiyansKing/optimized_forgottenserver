@@ -54,6 +54,12 @@ SchedulerTask* createSchedulerTask(uint32_t delay, std::function<void (void)> f)
 class Scheduler : public ThreadHolder<Scheduler>
 {
 	public:
+		#if BOOST_VERSION >= 106600
+		Scheduler() : work(boost::asio::make_work_guard(io_service)) {}
+		#else
+		Scheduler() : work(std::make_shared<boost::asio::io_service::work>(io_service)) {}
+		#endif
+
 		uint64_t addEvent(SchedulerTask* task);
 		void stopEvent(uint64_t eventId);
 
@@ -66,7 +72,11 @@ class Scheduler : public ThreadHolder<Scheduler>
 		std::atomic<uint64_t> lastEventId {0};
 		std::map<uint64_t, boost::asio::deadline_timer> eventIds;
 		boost::asio::io_service io_service;
-		boost::asio::io_service::work work{ io_service };
+		#if BOOST_VERSION >= 106600
+		boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work;
+		#else
+		std::shared_ptr<boost::asio::io_service::work> work;
+		#endif
 };
 
 extern Scheduler g_scheduler;

@@ -19,10 +19,18 @@
 
 #include "otpch.h"
 
-#if __has_include("luajit/lua.hpp")
-  #include <luajit/lua.hpp>
+#ifdef __has_include
+
+#if __has_include(<luajit/lua.hpp>)
+#include <luajit/lua.hpp>
+#elif __has_include(<lua.hpp>)
+#include <lua.hpp>
 #else
-  #include <lua.hpp>
+#error "Cannot detect lua library"
+#endif
+
+#else
+#include <lua.hpp>
 #endif
 
 #include "configmanager.h"
