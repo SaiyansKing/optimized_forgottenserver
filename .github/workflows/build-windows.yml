@@ -32,7 +32,7 @@ jobs:
             packages: >
               boost-asio boost-iostreams boost-system boost-filesystem
               boost-variant boost-lockfree lua libmariadb pugixml
-              cryptopp
+              mpir
 
     steps:
       - uses: actions/checkout@v2
@@ -74,7 +74,6 @@ jobs:
         run: |
           md ${{ runner.workspace }}\canary-server\canary-server
           Copy-Item ${{ runner.workspace }}\canary-server\config.lua.dist     ${{ runner.workspace }}\canary-server\canary-server
-          Copy-Item ${{ runner.workspace }}\canary-server\key.pem             ${{ runner.workspace }}\canary-server\canary-server
           Copy-Item ${{ runner.workspace }}\canary-server\LICENSE             ${{ runner.workspace }}\canary-server\canary-server
           Copy-Item ${{ runner.workspace }}\canary-server\README.md           ${{ runner.workspace }}\canary-server\canary-server
           Copy-Item ${{ runner.workspace }}\build\bin\canary.exe      ${{ runner.workspace }}\canary-server\canary-server\canary-server.exe

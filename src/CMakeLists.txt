@@ -23,23 +23,11 @@ include(OptionsCanary)
 # *****************************************************************************
 # Find Packages
 # *****************************************************************************
-
-# if (WIN32)
-#     # On Windows you must use cryptopp-static because the dynamic link library
-#     # is the FIPS DLL (which is something you should avoid).
-#     find_package(cryptopp CONFIG REQUIRED)
-#     set(CRYPTOPP_LIBRARIES "cryptopp-static")
-# else ()
-#   find_package(CryptoPP REQUIRED)
-# endif ()
-
-# find_package(PugiXML REQUIRED)
-# find_package(pugixml REQUIRED)
-# find_package(MySQL REQUIRED)
 find_package(Threads REQUIRED)
 find_package(Boost 1.53.0 COMPONENTS system filesystem iostreams date_time REQUIRED)
 find_package(Lua REQUIRED)
-
+find_package(ZLIB REQUIRED)
+find_package(GMP REQUIRED)
 
 
 # *****************************************************************************
@@ -103,7 +91,6 @@ target_sources(canary_lib
     ${CMAKE_CURRENT_LIST_DIR}/protocol.cpp
     ${CMAKE_CURRENT_LIST_DIR}/protocolgame.cpp
     ${CMAKE_CURRENT_LIST_DIR}/protocollogin.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/protocolold.cpp
     ${CMAKE_CURRENT_LIST_DIR}/protocolstatus.cpp
     ${CMAKE_CURRENT_LIST_DIR}/quests.cpp
     ${CMAKE_CURRENT_LIST_DIR}/raids.cpp
@@ -133,21 +120,23 @@ target_include_directories(canary_lib
     $<INSTALL_INTERFACE:include>)
 add_library(canary_lib::canary_lib ALIAS canary_lib)
 
-target_include_directories(canary_lib
+target_include_directories(canary_lib SYSTEM
                           PUBLIC
-                            ${ZLIB_INCLUDE_DIR}
                             ${LUA_INCLUDE_DIR}
                             ${CANARY_EXTERNAL_PATH}
+                            ${GMP_INCLUDE_DIR}
 )
 
 target_link_libraries(canary_lib
                         PUBLIC
-                          Boost::boost Threads::Threads cryptopp-static
-                          mariadbclient pugixml::pugixml spdlog::spdlog
-                          ${LUA_LIBRARIES}
+                          ZLIB::ZLIB Boost::boost ${GMP_LIBRARIES}
+                          Threads::Threads mariadbclient pugixml::pugixml
+                          spdlog::spdlog ${LUA_LIBRARIES}
                         PRIVATE
                           Boost::system Boost::filesystem Boost::iostreams
-                          Boost::date_time doctest::doctest)
+                          Boost::date_time doctest::doctest
+)
+
 
 # *****************************************************************************
 # Git Version
