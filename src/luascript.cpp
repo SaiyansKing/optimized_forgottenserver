@@ -7603,14 +7603,10 @@ int LuaScriptInterface::luaCreatureSetMaster(lua_State* L)
 			}
 		}
 	}
-	#if CLIENT_VERSION >= 1100
 	//Due to cache issues on qt clients we need to recreature creature struct
 	//updateCreatureType doesn't work anymore because it doesn't refresh client cache
 	//I don't know why cipsoft even keep this packet when it don't work anymore
 	g_game.updateCreatureData(creature);
-	#elif CLIENT_VERSION >= 910
-	g_game.updateCreatureType(creature);
-	#endif
 	return 1;
 }
 

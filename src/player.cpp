@@ -109,9 +109,7 @@ bool Player::setVocation(uint16_t vocId, bool internal /*=false*/)
 		condition->setParam(CONDITION_PARAM_MANATICKS, vocation->getManaGainTicks() * 1000);
 	}
 	if (!internal) {
-		#if CLIENT_VERSION >= 950
 		sendBasicData();
-		#endif
 	}
 	return true;
 }
@@ -782,7 +780,6 @@ bool Player::canSeeCreature(const Creature* creature) const
 
 bool Player::canWalkthrough(const Creature* creature) const
 {
-	#if CLIENT_VERSION >= 854
 	if (group->access || creature->isInGhostMode()) {
 		return true;
 	}
@@ -815,15 +812,10 @@ bool Player::canWalkthrough(const Creature* creature) const
 
 	thisPlayer->setLastWalkthroughPosition(creature->getPosition());
 	return true;
-	#else
-	(void)creature;
-	return false;
-	#endif
 }
 
 bool Player::canWalkthroughEx(const Creature* creature) const
 {
-	#if CLIENT_VERSION >= 854
 	if (group->access) {
 		return true;
 	}
@@ -835,10 +827,6 @@ bool Player::canWalkthroughEx(const Creature* creature) const
 
 	const Tile* playerTile = player->getTile();
 	return playerTile && (playerTile->hasFlag(TILESTATE_PROTECTIONZONE) || player->getLevel() <= static_cast<uint32_t>(g_config.getNumber(ConfigManager::PROTECTION_LEVEL)));
-	#else
-	(void)creature;
-	return false;
-	#endif
 }
 
 void Player::onReceiveMail() const
@@ -1240,9 +1228,7 @@ void Player::onChangeZone(ZoneType_t zone)
 	}
 	#endif
 
-	#if CLIENT_VERSION >= 854
 	g_game.updateCreatureWalkthrough(this);
-	#endif
 	sendIcons();
 }
 
@@ -1794,12 +1780,10 @@ void Player::addExperience(Creature* source, uint64_t exp, bool sendText/* = fal
 		g_game.addPlayerMana(this);
 		#endif
 
-		#if CLIENT_VERSION >= 854
 		const uint32_t protectionLevel = static_cast<uint32_t>(g_config.getNumber(ConfigManager::PROTECTION_LEVEL));
 		if (prevLevel < protectionLevel && level >= protectionLevel) {
 			g_game.updateCreatureWalkthrough(this);
 		}
-		#endif
 
 		if (party) {
 			party->updateSharedExperience();
@@ -1881,12 +1865,10 @@ void Player::removeExperience(uint64_t exp, bool sendText/* = false*/)
 		g_game.addPlayerMana(this);
 		#endif
 
-		#if CLIENT_VERSION >= 854
 		const uint32_t protectionLevel = static_cast<uint32_t>(g_config.getNumber(ConfigManager::PROTECTION_LEVEL));
 		if (oldLevel >= protectionLevel && level < protectionLevel) {
 			g_game.updateCreatureWalkthrough(this);
 		}
-		#endif
 
 		if (party) {
 			party->updateSharedExperience();
@@ -4163,9 +4145,7 @@ bool Player::isPremium() const
 void Player::setPremiumDays(int32_t v)
 {
 	premiumDays = v;
-	#if CLIENT_VERSION >= 950
 	sendBasicData();
-	#endif
 }
 
 PartyShields_t Player::getPartyShield(const Player* player) const
@@ -4297,15 +4277,11 @@ GuildEmblems_t Player::getGuildEmblem(const Player* player) const
 	}
 
 	if (player->getGuildWarVector().empty()) {
-		#if CLIENT_VERSION >= 1000
 		if (guild == playerGuild) {
 			return GUILDEMBLEM_MEMBER;
 		} else {
 			return GUILDEMBLEM_OTHER;
 		}
-		#else
-		return GUILDEMBLEM_NONE;
-		#endif
 	} else if (guild == playerGuild) {
 		return GUILDEMBLEM_ALLY;
 	} else if (isInWar(player)) {
@@ -4633,12 +4609,8 @@ void Player::sendModalWindow(const ModalWindow& modalWindow)
 		clearModalWindows();
 	}
 
-	#if CLIENT_VERSION >= 960
 	modalWindows.push_back(modalWindow.id);
 	client->sendModalWindow(modalWindow);
-	#else
-	(void)modalWindow;
-	#endif
 }
 
 void Player::clearModalWindows()

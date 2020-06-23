@@ -44,9 +44,6 @@ void Party::disband()
 
 	currentLeader->setParty(nullptr);
 	currentLeader->sendClosePrivate(CHANNEL_PARTY);
-	#if CLIENT_VERSION >= 1000 && CLIENT_VERSION < 1185
-	g_game.updatePlayerHelpers(*currentLeader);
-	#endif
 	currentLeader->sendPlayerPartyIcons(currentLeader);
 	currentLeader->sendTextMessage(MESSAGE_INFO_DESCR, "Your party has been disbanded.");
 
@@ -69,9 +66,6 @@ void Party::disband()
 
 		member->sendPlayerPartyIcons(currentLeader);
 		currentLeader->sendPlayerPartyIcons(member);
-		#if CLIENT_VERSION >= 1000 && CLIENT_VERSION < 1185
-		g_game.updatePlayerHelpers(*member);
-		#endif
 	}
 	memberList.clear();
 	delete this;
@@ -112,16 +106,10 @@ bool Party::leaveParty(Player* player)
 
 	player->setParty(nullptr);
 	player->sendClosePrivate(CHANNEL_PARTY);
-	#if CLIENT_VERSION >= 1000 && CLIENT_VERSION < 1185
-	g_game.updatePlayerHelpers(*player);
-	#endif
 
 	for (Player* member : memberList) {
 		member->sendPlayerPartyIcons(player);
 		player->sendPlayerPartyIcons(member);
-		#if CLIENT_VERSION >= 1000 && CLIENT_VERSION < 1185
-		g_game.updatePlayerHelpers(*member);
-		#endif
 	}
 
 	leader->sendPlayerPartyIcons(player);
@@ -225,10 +213,6 @@ bool Party::joinParty(Player& player)
 
 	memberList.push_back(&player);
 
-	#if CLIENT_VERSION >= 1000 && CLIENT_VERSION < 1185
-	g_game.updatePlayerHelpers(player);
-	#endif
-
 	#if GAME_FEATURE_PARTY_LIST > 0
 	updatePlayerStatus(&player);
 	#endif
@@ -263,15 +247,6 @@ bool Party::removeInvite(Player& player, bool removeFromPlayer/* = true*/)
 	if (empty()) {
 		disband();
 	}
-	#if CLIENT_VERSION >= 1000 && CLIENT_VERSION < 1185
-	else {
-		for (Player* member : memberList) {
-			g_game.updatePlayerHelpers(*member);
-		}
-
-		g_game.updatePlayerHelpers(*leader);
-	}
-	#endif
 
 	return true;
 }
@@ -307,12 +282,6 @@ bool Party::invitePlayer(Player& player)
 
 	inviteList.push_back(&player);
 
-	#if CLIENT_VERSION >= 1000 && CLIENT_VERSION < 1185
-	for (Player* member : memberList) {
-		g_game.updatePlayerHelpers(*member);
-	}
-	g_game.updatePlayerHelpers(*leader);
-	#endif
 
 	leader->sendCreatureShield(&player);
 	player.sendCreatureShield(leader);

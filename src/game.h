@@ -341,9 +341,7 @@ class Game
 		void playerMoveItem(Player* player, const Position& fromPos,
 		                    uint16_t spriteId, uint8_t fromStackPos, const Position& toPos, uint8_t count, Item* item, Cylinder* toCylinder);
 		void playerEquipItem(Player* player, uint16_t spriteId);
-		#if CLIENT_VERSION >= 1150
 		void playerTeleport(Player* player, const Position& position);
-		#endif
 		void playerMove(Player* player, Direction direction);
 		void playerCreatePrivateChannel(Player* player);
 		void playerChannelInvite(Player* player, const std::string& name);
@@ -368,9 +366,7 @@ class Game
 		void playerMoveUpContainer(Player* player, uint8_t cid);
 		void playerUpdateContainer(Player* player, uint8_t cid);
 		void playerRotateItem(uint32_t playerId, const Position& pos, uint8_t stackPos, const uint16_t spriteId);
-		#if CLIENT_VERSION >= 1092
 		void playerWrapableItem(uint32_t playerId, const Position& pos, uint8_t stackPos, const uint16_t spriteId);
-		#endif
 		void playerWriteItem(Player* player, uint32_t windowTextId, const std::string& text);
 		#if GAME_FEATURE_BROWSEFIELD > 0
 		void playerBrowseField(uint32_t playerId, const Position& pos);
@@ -448,15 +444,8 @@ class Game
 		void internalCreatureChangeVisible(Creature* creature, bool visible);
 		void changeLight(const Creature* creature);
 		void updateCreatureSkull(const Creature* creature);
-		#if CLIENT_VERSION >= 1000 && CLIENT_VERSION < 1185
-		void updatePlayerHelpers(const Player& player);
-		#endif
-		#if CLIENT_VERSION >= 910
 		void updateCreatureType(Creature* creature);
-		#endif
-		#if CLIENT_VERSION >= 854
 		void updateCreatureWalkthrough(const Creature* creature);
-		#endif
 
 		GameState_t getGameState() const;
 		void setGameState(GameState_t newState);

@@ -85,10 +85,6 @@ class ProtocolGame final : public Protocol
 		#endif
 		void logout(bool displayEffect, bool forced);
 
-		uint16_t getVersion() const {
-			return version;
-		}
-
 		static NetworkMessage playermsg;
 
 	private:
@@ -119,18 +115,14 @@ class ProtocolGame final : public Protocol
 		void parseAutoWalk(NetworkMessage& msg);
 		void parseSetOutfit(NetworkMessage& msg);
 		void parseSay(NetworkMessage& msg);
-		#if CLIENT_VERSION >= 1092
 		void parseWrapableItem(NetworkMessage& msg);
-		#endif
 		void parseLookAt(NetworkMessage& msg);
 		void parseLookInBattleList(NetworkMessage& msg);
 		void parseFightModes(NetworkMessage& msg);
 		void parseAttack(NetworkMessage& msg);
 		void parseFollow(NetworkMessage& msg);
 		void parseEquipObject(NetworkMessage& msg);
-		#if CLIENT_VERSION >= 1150
 		void parseTeleport(NetworkMessage& msg);
-		#endif
 
 		void parseCyclopediaMonsters(NetworkMessage& msg);
 		void parseCyclopediaRace(NetworkMessage& msg);
@@ -168,9 +160,7 @@ class ProtocolGame final : public Protocol
 		#if GAME_FEATURE_MOUNTS > 0
 		void parseToggleMount(NetworkMessage& msg);
 		#endif
-		#if CLIENT_VERSION >= 960
 		void parseModalWindowAnswer(NetworkMessage& msg);
-		#endif
 
 		#if GAME_FEATURE_BROWSEFIELD > 0
 		void parseBrowseField(NetworkMessage& msg);
@@ -256,9 +246,7 @@ class ProtocolGame final : public Protocol
 		void sendCancelTarget();
 		void sendCreatureOutfit(const Creature* creature, const Outfit_t& outfit);
 		void sendStats();
-		#if CLIENT_VERSION >= 950
 		void sendBasicData();
-		#endif
 		//void sendBlessStatus();
 		void sendTextMessage(const TextMessage& message);
 		void sendReLoginWindow(uint8_t unfairFightReduction);
@@ -286,17 +274,10 @@ class ProtocolGame final : public Protocol
 		void sendTournamentLeaderboard();
 
 		void updateCreatureData(const Creature* creature);
-		#if CLIENT_VERSION >= 854
 		void sendCreatureWalkthrough(const Creature* creature, bool walkthrough);
-		#endif
 		void sendCreatureShield(const Creature* creature);
 		void sendCreatureSkull(const Creature* creature);
-		#if CLIENT_VERSION >= 910
 		void sendCreatureType(const Creature* creature, uint8_t creatureType);
-		#endif
-		#if CLIENT_VERSION >= 1000 && CLIENT_VERSION < 1185
-		void sendCreatureHelpers(uint32_t creatureId, uint16_t helpers);
-		#endif
 
 		void sendShop(Npc* npc, const ShopInfoList& itemList);
 		void sendCloseShop();
@@ -326,22 +307,16 @@ class ProtocolGame final : public Protocol
 		void sendVIP(uint32_t guid, const std::string& name, VipStatus_t status);
 		#endif
 		void sendVIPEntries();
-		#if CLIENT_VERSION >= 1000
 		void sendFightModes();
-		#endif
 
 		void sendCreatureLight(const Creature* creature);
 		void sendWorldLight(LightInfo lightInfo);
-		#if CLIENT_VERSION >= 1121
 		void sendTibiaTime(int32_t time);
-		#endif
 
 		void sendCreatureSquare(const Creature* creature, SquareColor_t color);
 
-		#if CLIENT_VERSION >= 870
 		void sendSpellCooldown(uint8_t spellId, uint32_t time);
 		void sendSpellGroupCooldown(SpellGroup_t groupId, uint32_t time);
-		#endif
 
 		//tiles
 		void sendMapDescription(const Position& pos);
@@ -380,9 +355,7 @@ class ProtocolGame final : public Protocol
 		#endif
 
 		//messages
-		#if CLIENT_VERSION >= 960
 		void sendModalWindow(const ModalWindow& modalWindow);
-		#endif
 
 		//Help functions
 
@@ -430,8 +403,6 @@ class ProtocolGame final : public Protocol
 
 		uint64_t eventConnect = 0;
 		uint32_t challengeTimestamp = 0;
-		uint16_t version = CLIENT_VERSION;
-
 		uint8_t challengeRandom = 0;
 
 		bool addExivaRestrictions = false;

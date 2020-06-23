@@ -191,11 +191,7 @@ std::string& Container::getContentDescription(std::string& sink) const
 			sink.append(", ");
 		}
 
-		#if CLIENT_VERSION >= 1200
 		sink.append(1, '{').append(std::to_string(static_cast<uint32_t>(item->getClientID()))).append(1, '|').append(item->getNameDescription()).append(1, '}');
-		#else
-		sink.append(item->getNameDescription());
-		#endif
 	}
 
 	if (firstitem) {

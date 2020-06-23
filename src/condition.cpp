@@ -450,12 +450,7 @@ void ConditionAttributes::updateStats(Player* player)
 	}
 
 	if (needUpdateStats) {
-		#if CLIENT_VERSION >= 1200
-		//We have magic level in skills now so we need to send skills update too here
 		player->addScheduledUpdates((PlayerUpdate_Stats | PlayerUpdate_Skills));
-		#else
-		player->addScheduledUpdates(PlayerUpdate_Stats);
-		#endif
 	}
 }
 
@@ -533,12 +528,7 @@ void ConditionAttributes::endCondition(Creature* creature)
 		}
 
 		if (needUpdateStats) {
-			#if CLIENT_VERSION >= 1200
-			//We have magic level in skills now so we need to send skills update too here
 			player->addScheduledUpdates((PlayerUpdate_Stats | PlayerUpdate_Skills));
-			#else
-			player->addScheduledUpdates(PlayerUpdate_Stats);
-			#endif
 		}
 	}
 
@@ -1657,16 +1647,12 @@ void ConditionSpellCooldown::addCondition(Creature* creature, const Condition* c
 	if (updateCondition(condition)) {
 		setTicks(condition->getTicks());
 
-		#if CLIENT_VERSION >= 870
 		if (subId != 0 && ticks > 0) {
 			Player* player = creature->getPlayer();
 			if (player) {
 				player->sendSpellCooldown(subId, ticks);
 			}
 		}
-		#else
-		(void)creature;
-		#endif
 	}
 }
 
@@ -1676,16 +1662,12 @@ bool ConditionSpellCooldown::startCondition(Creature* creature)
 		return false;
 	}
 
-	#if CLIENT_VERSION >= 870
 	if (subId != 0 && ticks > 0) {
 		Player* player = creature->getPlayer();
 		if (player) {
 			player->sendSpellCooldown(subId, ticks);
 		}
 	}
-	#else
-	(void)creature;
-	#endif
 	return true;
 }
 
@@ -1694,16 +1676,12 @@ void ConditionSpellGroupCooldown::addCondition(Creature* creature, const Conditi
 	if (updateCondition(condition)) {
 		setTicks(condition->getTicks());
 
-		#if CLIENT_VERSION >= 870
 		if (subId != 0 && ticks > 0) {
 			Player* player = creature->getPlayer();
 			if (player) {
 				player->sendSpellGroupCooldown(static_cast<SpellGroup_t>(subId), ticks);
 			}
 		}
-		#else
-		(void)creature;
-		#endif
 	}
 }
 
@@ -1713,15 +1691,11 @@ bool ConditionSpellGroupCooldown::startCondition(Creature* creature)
 		return false;
 	}
 
-	#if CLIENT_VERSION >= 870
 	if (subId != 0 && ticks > 0) {
 		Player* player = creature->getPlayer();
 		if (player) {
 			player->sendSpellGroupCooldown(static_cast<SpellGroup_t>(subId), ticks);
 		}
 	}
-	#else
-	(void)creature;
-	#endif
 	return true;
 }

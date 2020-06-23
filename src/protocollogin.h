@@ -45,12 +45,12 @@ class ProtocolLogin : public Protocol
 		void onRecvFirstMessage(NetworkMessage& msg) override;
 
 	private:
-		void disconnectClient(const std::string& message, uint32_t version);
+		void disconnectClient(const std::string& message);
 
 		#if GAME_FEATURE_SESSIONKEY > 0
-		void getCharacterList(const std::string accountName, const std::string password, const std::string token, uint32_t version);
+		void getCharacterList(const std::string accountName, const std::string password, const std::string token);
 		#else
-		void getCharacterList(const std::string accountName, const std::string password, uint32_t version);
+		void getCharacterList(const std::string accountName, const std::string password);
 		#endif
 };
 

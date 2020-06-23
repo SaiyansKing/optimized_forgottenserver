@@ -32,10 +32,10 @@
 extern ConfigManager g_config;
 extern Game g_game;
 
-void ProtocolLogin::disconnectClient(const std::string& message, uint32_t version)
+void ProtocolLogin::disconnectClient(const std::string& message)
 {
 	auto output = OutputMessagePool::getOutputMessage();
-	output->addByte(version >= 1076 ? 0x0B : 0x0A);
+	output->addByte(0x0B);
 	output->addString(message);
 	send(output);
 
@@ -43,9 +43,9 @@ void ProtocolLogin::disconnectClient(const std::string& message, uint32_t versio
 }
 
 #if GAME_FEATURE_SESSIONKEY > 0
-void ProtocolLogin::getCharacterList(const std::string accountName, const std::string password, const std::string token, uint32_t version)
+void ProtocolLogin::getCharacterList(const std::string accountName, const std::string password, const std::string token)
 #else
-void ProtocolLogin::getCharacterList(const std::string accountName, const std::string password, uint32_t version)
+void ProtocolLogin::getCharacterList(const std::string accountName, const std::string password)
 #endif
 {
 	#if !(GAME_FEATURE_LOGIN_EXTENDED > 0)
@@ -56,7 +56,7 @@ void ProtocolLogin::getCharacterList(const std::string accountName, const std::s
 		if (serverIp == INADDR_NONE) {
 			struct hostent* he = gethostbyname(cfgIp.c_str());
 			if (!he || he->h_addrtype != AF_INET) { //Only ipv4
-				disconnectClient("ERROR: Cannot resolve hostname.", version);
+				disconnectClient("ERROR: Cannot resolve hostname.");
 				return;
 			}
 			memcpy(&serverIp, he->h_addr, sizeof(serverIp));
@@ -77,13 +77,13 @@ void ProtocolLogin::getCharacterList(const std::string accountName, const std::s
 
 		std::ostringstream ss;
 		ss << "Your IP has been banned until " << formatDateShort(banInfo.expiresAt) << " by " << banInfo.bannedBy << ".\n\nReason specified:\n" << banInfo.reason;
-		disconnectClient(ss.str(), version);
+		disconnectClient(ss.str());
 		return;
 	}
 
 	Account account;
 	if (!IOLoginData::loginserverAuthentication(accountName, password, account)) {
-		disconnectClient("Account name or password is not correct.", version);
+		disconnectClient("Account name or password is not correct.");
 		return;
 	}
 
@@ -188,44 +188,35 @@ void ProtocolLogin::onRecvFirstMessage(NetworkMessage& msg)
 		return;
 	}
 
-	msg.skipBytes(2); // client OS
-
-	uint32_t clientVersion = static_cast<uint32_t>(msg.get<uint16_t>());
-	if (clientVersion >= 971) {
-		clientVersion = msg.get<uint32_t>();
-		msg.skipBytes(13);
-	} else {
-		msg.skipBytes(12);
-	}
+	msg.skipBytes(21);
 	/*
 	 * Skipped bytes:
+	 * Client OS
+	 * Protocol Version
+	 * Client Version
 	 * 4 bytes: protocolVersion(971+)
 	 * 12 bytes: dat, spr, pic signatures (4 bytes each)
 	 * 1 byte: preview world(971+)
 	 */
 
-	if (clientVersion >= 770) {
-		if (!Protocol::RSA_decrypt(msg)) {
-			disconnect();
-			return;
-		}
-
-		uint32_t key[4] = {msg.get<uint32_t>(), msg.get<uint32_t>(), msg.get<uint32_t>(), msg.get<uint32_t>()};
-		enableXTEAEncryption();
-		setXTEAKey(key);
-
-		if (clientVersion >= 830) {
-			setChecksumMethod(CHECKSUM_METHOD_ADLER32);
-		}
+	if (!Protocol::RSA_decrypt(msg)) {
+		disconnect();
+		return;
 	}
 
+	uint32_t key[4] = {msg.get<uint32_t>(), msg.get<uint32_t>(), msg.get<uint32_t>(), msg.get<uint32_t>()};
+	enableXTEAEncryption();
+	setXTEAKey(key);
+
+	setChecksumMethod(CHECKSUM_METHOD_ADLER32);
+
 	if (g_game.getGameState() == GAME_STATE_STARTUP) {
-		disconnectClient("Gameworld is starting up. Please wait.", clientVersion);
+		disconnectClient("Gameworld is starting up. Please wait.");
 		return;
 	}
 
 	if (g_game.getGameState() == GAME_STATE_MAINTAIN) {
-		disconnectClient("Gameworld is under maintenance.\nPlease re-connect in a while.", clientVersion);
+		disconnectClient("Gameworld is under maintenance.\nPlease re-connect in a while.");
 		return;
 	}
 
@@ -235,13 +226,13 @@ void ProtocolLogin::onRecvFirstMessage(NetworkMessage& msg)
 	std::string accountName = std::to_string(msg.get<uint32_t>());
 	#endif
 	if (accountName.empty()) {
-		disconnectClient("Invalid account name.", clientVersion);
+		disconnectClient("Invalid account name.");
 		return;
 	}
 
 	std::string password = msg.getString();
 	if (password.empty()) {
-		disconnectClient("Invalid password.", clientVersion);
+		disconnectClient("Invalid password.");
 		return;
 	}
 
@@ -249,16 +240,16 @@ void ProtocolLogin::onRecvFirstMessage(NetworkMessage& msg)
 	// read authenticator token and stay logged in flag from last 128 bytes
 	msg.skipBytes((msg.getLength() - 128) - msg.getBufferPosition());
 	if (!Protocol::RSA_decrypt(msg)) {
-		disconnectClient("Invalid authentification token.", clientVersion);
+		disconnectClient("Invalid authentification token.");
 		return;
 	}
 
 	std::string authToken = msg.getString();
 
 	auto thisPtr = std::static_pointer_cast<ProtocolLogin>(shared_from_this());
-	g_dispatcher.addTask(std::bind(&ProtocolLogin::getCharacterList, thisPtr, std::move(accountName), std::move(password), std::move(authToken), clientVersion));
+	g_dispatcher.addTask(std::bind(&ProtocolLogin::getCharacterList, thisPtr, std::move(accountName), std::move(password), std::move(authToken)));
 	#else
 	auto thisPtr = std::static_pointer_cast<ProtocolLogin>(shared_from_this());
-	g_dispatcher.addTask(std::bind(&ProtocolLogin::getCharacterList, thisPtr, std::move(accountName), std::move(password), clientVersion));
+	g_dispatcher.addTask(std::bind(&ProtocolLogin::getCharacterList, thisPtr, std::move(accountName), std::move(password)));
 	#endif
 }

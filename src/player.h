@@ -308,7 +308,7 @@ class Player final : public Creature, public Cylinder
 				return 0;
 			}
 
-			return client->getVersion();
+			return CLIENT_VERSION;
 		}
 
 		bool hasSecureMode() const {
@@ -859,33 +859,21 @@ class Player final : public Creature, public Cylinder
 				client->sendCreatureLight(creature);
 			}
 		}
-		#if CLIENT_VERSION >= 854
 		void sendCreatureWalkthrough(const Creature* creature, bool walkthrough) {
 			if (client) {
 				client->sendCreatureWalkthrough(creature, walkthrough);
 			}
 		}
-		#endif
 		void sendCreatureShield(const Creature* creature) {
 			if (client) {
 				client->sendCreatureShield(creature);
 			}
 		}
-		#if CLIENT_VERSION >= 910
 		void sendCreatureType(const Creature* creature, uint8_t creatureType) {
 			if (client) {
 				client->sendCreatureType(creature, creatureType);
 			}
 		}
-		#endif
-		#if CLIENT_VERSION >= 1000 && CLIENT_VERSION < 1185
-		void sendCreatureHelpers(uint32_t creatureId, uint16_t helpers) {
-			if (client) {
-				client->sendCreatureHelpers(creatureId, helpers);
-			}
-		}
-		#endif
-		#if CLIENT_VERSION >= 870
 		void sendSpellCooldown(uint8_t spellId, uint32_t time) {
 			if (client) {
 				client->sendSpellCooldown(spellId, time);
@@ -896,7 +884,6 @@ class Player final : public Creature, public Cylinder
 				client->sendSpellGroupCooldown(groupId, time);
 			}
 		}
-		#endif
 		void sendModalWindow(const ModalWindow& modalWindow);
 
 		//container
@@ -1052,13 +1039,11 @@ class Player final : public Creature, public Cylinder
 			}
 		}
 		void sendStats();
-		#if CLIENT_VERSION >= 950
 		void sendBasicData() const {
 			if (client) {
 				client->sendBasicData();
 			}
 		}
-		#endif
 		void sendSkills() const {
 			if (client) {
 				client->sendSkills();
@@ -1167,13 +1152,11 @@ class Player final : public Creature, public Cylinder
 				client->sendWorldLight(lightInfo);
 			}
 		}
-		#if CLIENT_VERSION >= 1121
 		void sendTibiaTime(int32_t time) {
 			if (client) {
 				client->sendTibiaTime(time);
 			}
 		}
-		#endif
 		#if GAME_FEATURE_INSPECTION > 0
 		void sendItemInspection(uint16_t itemId, uint8_t itemCount, const Item* item, bool cyclopedia) {
 			if (client) {
@@ -1324,13 +1307,11 @@ class Player final : public Creature, public Cylinder
 			}
 		}
 		#endif
-		#if CLIENT_VERSION >= 1000
 		void sendFightModes() {
 			if (client) {
 				client->sendFightModes();
 			}
 		}
-		#endif
 		void sendNetworkMessage(const NetworkMessage& message) {
 			if (client) {
 				client->writeToOutputBuffer(message);

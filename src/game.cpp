@@ -1789,7 +1789,6 @@ void Game::playerEquipItem(Player* player, uint16_t spriteId)
 	}
 }
 
-#if CLIENT_VERSION >= 1150
 void Game::playerTeleport(Player* player, const Position& position)
 {
 	if (!player->isAccessPlayer()) {
@@ -1801,7 +1800,6 @@ void Game::playerTeleport(Player* player, const Position& position)
 		player->sendCancelMessage(ret);
 	}
 }
-#endif
 
 void Game::playerMove(Player* player, Direction direction)
 {
@@ -2286,7 +2284,6 @@ void Game::playerRotateItem(uint32_t playerId, const Position& pos, uint8_t stac
 	}
 }
 
-#if CLIENT_VERSION >= 1092
 void Game::playerWrapableItem(uint32_t playerId, const Position& pos, uint8_t stackPos, const uint16_t spriteId)
 {
 	Player* player = getPlayerByID(playerId);
@@ -2369,7 +2366,6 @@ void Game::playerWrapableItem(uint32_t playerId, const Position& pos, uint8_t st
 		}
 	}
 }
-#endif
 
 void Game::playerWriteItem(Player* player, uint32_t windowTextId, const std::string& text)
 {
@@ -4481,18 +4477,14 @@ void Game::checkLight()
 
 		for (const auto& it : players) {
 			it.second->sendWorldLight(lightInfo);
-			#if CLIENT_VERSION >= 1121
 			it.second->sendTibiaTime(lightHour);
-			#endif
 		}
 	}
-	#if CLIENT_VERSION >= 1121
 	else {
 		for (const auto& it : players) {
 			it.second->sendTibiaTime(lightHour);
 		}
 	}
-	#endif
 }
 
 LightInfo Game::getWorldLightInfo() const
@@ -4553,7 +4545,6 @@ void Game::broadcastMessage(const std::string& text, MessageClasses type) const
 	}
 }
 
-#if CLIENT_VERSION >= 854
 void Game::updateCreatureWalkthrough(const Creature* creature)
 {
 	//send to clients
@@ -4564,7 +4555,6 @@ void Game::updateCreatureWalkthrough(const Creature* creature)
 		tmpPlayer->sendCreatureWalkthrough(creature, tmpPlayer->canWalkthroughEx(creature));
 	}
 }
-#endif
 
 void Game::updateCreatureSkull(const Creature* creature)
 {
@@ -4579,21 +4569,6 @@ void Game::updateCreatureSkull(const Creature* creature)
 	}
 }
 
-#if CLIENT_VERSION >= 1000 && CLIENT_VERSION < 1185
-void Game::updatePlayerHelpers(const Player& player)
-{
-	uint32_t creatureId = player.getID();
-	uint16_t helpers = player.getHelpers();
-
-	SpectatorVector spectators;
-	map.getSpectators(spectators, player.getPosition(), true, true);
-	for (Creature* spectator : spectators) {
-		spectator->getPlayer()->sendCreatureHelpers(creatureId, helpers);
-	}
-}
-#endif
-
-#if CLIENT_VERSION >= 910
 void Game::updateCreatureType(Creature* creature)
 {
 	const Player* masterPlayer = nullptr;
@@ -4630,7 +4605,6 @@ void Game::updateCreatureType(Creature* creature)
 		}
 	}
 }
-#endif
 
 void Game::updatePremium(Account& account)
 {
