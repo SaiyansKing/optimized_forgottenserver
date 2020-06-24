@@ -1027,6 +1027,14 @@ ShootType_t getShootType(const std::string& strValue)
 		return CONST_ANI_GLOOTHSPEAR;
 	} else if (!tfs_strcmp(strValue.c_str(), "simplearrow")) {
 		return CONST_ANI_SIMPLEARROW;
+	} else if (!tfs_strcmp(strValue.c_str(), "leafstar")) {
+		return CONST_ANI_LEAFSTAR;
+	} else if (!tfs_strcmp(strValue.c_str(), "diamondarrow")) {
+		return CONST_ANI_DIAMONDARROW;
+	} else if (!tfs_strcmp(strValue.c_str(), "spectralbolt")) {
+		return CONST_ANI_SPECTRALBOLT;
+	} else if (!tfs_strcmp(strValue.c_str(), "royalstar")) {
+		return CONST_ANI_ROYALSTAR;
 	}
 	return CONST_ANI_NONE;
 }
