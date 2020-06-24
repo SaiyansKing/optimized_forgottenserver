@@ -128,7 +128,7 @@ uint32_t IOLoginData::gameworldAuthentication(const std::string& accountName, co
 	std::stringExtended query(std::max<size_t>(escapedAccountName.length(), escapedCharacterName.length()) + static_cast<size_t>(128));
 
 	#if GAME_FEATURE_SESSIONKEY > 0
-	query.append("SELECT `id`, `password`, `secret` FROM `accounts` WHERE `name` = ").append(escapedAccountName);
+	query.append("SELECT `id`, `password`, `secret` FROM `accounts` WHERE `email` = ").append(escapedAccountName);
 	#else
 	query.append("SELECT `id`, `password` FROM `accounts` WHERE `name` = ").append(escapedAccountName);
 	#endif
@@ -137,16 +137,20 @@ uint32_t IOLoginData::gameworldAuthentication(const std::string& accountName, co
 		return 0;
 	}
 
-	#if GAME_FEATURE_SESSIONKEY > 0
-	std::string secret = decodeSecret(result->getString("secret"));
-	if (!secret.empty()) {
-		if (token.empty()) {
-			return 0;
-		}
+	std::string accountSecret = result->getString("secret");
 
-		bool tokenValid = token == generateToken(secret, tokenTime) || token == generateToken(secret, tokenTime - 1) || token == generateToken(secret, tokenTime + 1);
-		if (!tokenValid) {
-			return 0;
+	#if GAME_FEATURE_SESSIONKEY > 0
+	if (!accountSecret.empty()) {
+		std::string secret = decodeSecret(accountSecret);
+		if (!secret.empty()) {
+			if (token.empty()) {
+				return 0;
+			}
+
+			bool tokenValid = token == generateToken(secret, tokenTime) || token == generateToken(secret, tokenTime - 1) || token == generateToken(secret, tokenTime + 1);
+			if (!tokenValid) {
+				return 0;
+			}
 		}
 	}
 	#endif
