@@ -19,6 +19,7 @@
 
 #include "otpch.h"
 
+#include "combat.h"
 #include "condition.h"
 #include "game.h"
 
@@ -1168,7 +1169,8 @@ bool ConditionDamage::doDamage(Creature* creature, int32_t healthChange)
 		damage.primary.value = static_cast<int32_t>(std::round(damage.primary.value / 2.));
 	}
 
-	if (!creature->isAttackable() || Combat::canDoCombat(attacker, creature) != RETURNVALUE_NOERROR) {
+	CombatParams params;
+	if (!creature->isAttackable() || Combat::canDoTargetCombat(attacker, creature, params) != RETURNVALUE_NOERROR) {
 		if (!creature->isInGhostMode()) {
 			g_game.addMagicEffect(creature->getPosition(), CONST_ME_POFF);
 		}

@@ -337,7 +337,6 @@ class Spell : public BaseSpell
 		bool enabled = true;
 		bool premium = false;
 
-
 	private:
 		std::string name;
 };

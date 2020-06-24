@@ -304,7 +304,7 @@ bool CombatSpell::castSpell(Creature* creature)
 		pos = creature->getPosition();
 	}
 
-	combat->doCombat(creature, pos);
+	combat->executeAreaCombat(creature, pos);
 	return true;
 }
 
@@ -332,12 +332,12 @@ bool CombatSpell::castSpell(Creature* creature, Creature* target)
 
 	if (combat->hasArea()) {
 		if (needTarget) {
-			combat->doCombat(creature, target->getPosition());
+			combat->executeAreaCombat(creature, target->getPosition());
 		} else {
 			return castSpell(creature);
 		}
 	} else {
-		combat->doCombat(creature, target);
+		combat->executeTargetCombat(creature, target);
 	}
 	return true;
 }
@@ -673,7 +673,7 @@ bool Spell::playerInstantSpellCheck(Player* player, const Position& toPos)
 		g_game.map.setTile(toPos, tile);
 	}
 
-	ReturnValue ret = Combat::canDoCombat(player, tile, aggressive);
+	ReturnValue ret = Combat::canDoTileCombat(player, tile, aggressive);
 	if (ret != RETURNVALUE_NOERROR) {
 		player->sendCancelMessage(ret);
 		g_game.addMagicEffect(player->getPosition(), CONST_ME_POFF);
@@ -729,7 +729,7 @@ bool Spell::playerRuneSpellCheck(Player* player, const Position& toPos)
 		return false;
 	}
 
-	ReturnValue ret = Combat::canDoCombat(player, tile, aggressive);
+	ReturnValue ret = Combat::canDoTileCombat(player, tile, aggressive);
 	if (ret != RETURNVALUE_NOERROR) {
 		player->sendCancelMessage(ret);
 		g_game.addMagicEffect(player->getPosition(), CONST_ME_POFF);

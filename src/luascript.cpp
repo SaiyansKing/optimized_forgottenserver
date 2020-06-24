@@ -1168,6 +1168,15 @@ void LuaScriptInterface::registerFunctions()
 	registerEnum(COMBAT_PARAM_AGGRESSIVE)
 	registerEnum(COMBAT_PARAM_DISPEL)
 	registerEnum(COMBAT_PARAM_USECHARGES)
+	registerEnum(COMBAT_PARAM_VALIDTARGETS)
+
+	registerEnum(COMBAT_TARGET_PARAM_PLAYERS)
+	registerEnum(COMBAT_TARGET_PARAM_MONSTERS)
+	registerEnum(COMBAT_TARGET_PARAM_PLAYERSANDMONSTERS)
+	registerEnum(COMBAT_TARGET_PARAM_NPCS)
+	registerEnum(COMBAT_TARGET_PARAM_PLAYERSANDNPCS)
+	registerEnum(COMBAT_TARGET_PARAM_MONSTERSANDNPCS)
+	registerEnum(COMBAT_TARGET_PARAM_ALL)
 
 	registerEnum(CONDITION_NONE)
 	registerEnum(CONDITION_POISON)
@@ -3460,7 +3469,7 @@ int LuaScriptInterface::luaDoAreaCombatHealth(lua_State* L)
 		damage.primary.type = combatType;
 		damage.primary.value = normal_random(getNumber<int32_t>(L, 6), getNumber<int32_t>(L, 5));
 
-		Combat::doCombatHealth(creature, getPosition(L, 3), area, damage, params);
+		Combat::doCombatHealthArea(creature, getPosition(L, 3), area, params, damage);
 		pushBoolean(L, true);
 	} else {
 		reportErrorFunc(getErrorDesc(LUA_ERROR_AREA_NOT_FOUND));
@@ -3497,7 +3506,7 @@ int LuaScriptInterface::luaDoTargetCombatHealth(lua_State* L)
 	damage.primary.type = combatType;
 	damage.primary.value = normal_random(getNumber<int32_t>(L, 4), getNumber<int32_t>(L, 5));
 
-	Combat::doCombatHealth(creature, target, damage, params);
+	Combat::doCombatHealthTarget(creature, target, params, damage);
 	pushBoolean(L, true);
 	return 1;
 }
@@ -3524,7 +3533,7 @@ int LuaScriptInterface::luaDoAreaCombatMana(lua_State* L)
 		damage.primary.value = normal_random(getNumber<int32_t>(L, 4), getNumber<int32_t>(L, 5));
 
 		Position pos = getPosition(L, 2);
-		Combat::doCombatMana(creature, pos, area, damage, params);
+		Combat::doCombatManaArea(creature, pos, area, params, damage);
 		pushBoolean(L, true);
 	} else {
 		reportErrorFunc(getErrorDesc(LUA_ERROR_AREA_NOT_FOUND));
@@ -3558,7 +3567,7 @@ int LuaScriptInterface::luaDoTargetCombatMana(lua_State* L)
 	damage.primary.type = COMBAT_MANADRAIN;
 	damage.primary.value = normal_random(getNumber<int32_t>(L, 3), getNumber<int32_t>(L, 4));
 
-	Combat::doCombatMana(creature, target, damage, params);
+	Combat::doCombatManaTarget(creature, target, params, damage);
 	pushBoolean(L, true);
 	return 1;
 }
@@ -3586,7 +3595,7 @@ int LuaScriptInterface::luaDoAreaCombatCondition(lua_State* L)
 		CombatParams params;
 		params.impactEffect = getNumber<uint8_t>(L, 5);
 		params.conditionList.emplace_back(condition->clone());
-		Combat::doCombatCondition(creature, getPosition(L, 2), area, params);
+		Combat::doCombatConditionArea(creature, getPosition(L, 2), area, params);
 		pushBoolean(L, true);
 	} else {
 		reportErrorFunc(getErrorDesc(LUA_ERROR_AREA_NOT_FOUND));
@@ -3622,7 +3631,7 @@ int LuaScriptInterface::luaDoTargetCombatCondition(lua_State* L)
 	CombatParams params;
 	params.impactEffect = getNumber<uint8_t>(L, 4);
 	params.conditionList.emplace_back(condition->clone());
-	Combat::doCombatCondition(creature, target, params);
+	Combat::doCombatConditionTarget(creature, target, params);
 	pushBoolean(L, true);
 	return 1;
 }
@@ -3643,7 +3652,7 @@ int LuaScriptInterface::luaDoAreaCombatDispel(lua_State* L)
 		CombatParams params;
 		params.impactEffect = getNumber<uint8_t>(L, 5);
 		params.dispelType = getNumber<ConditionType_t>(L, 4);
-		Combat::doCombatDispel(creature, getPosition(L, 2), area, params);
+		Combat::doCombatDispelArea(creature, getPosition(L, 2), area, params);
 
 		pushBoolean(L, true);
 	} else {
@@ -3673,7 +3682,7 @@ int LuaScriptInterface::luaDoTargetCombatDispel(lua_State* L)
 	CombatParams params;
 	params.dispelType = getNumber<ConditionType_t>(L, 3);
 	params.impactEffect = getNumber<uint8_t>(L, 4);
-	Combat::doCombatDispel(creature, target, params);
+	Combat::doCombatDispelTarget(creature, target, params);
 	pushBoolean(L, true);
 	return 1;
 }
@@ -12456,21 +12465,21 @@ int LuaScriptInterface::luaCombatExecute(lua_State* L)
 			}
 
 			if (combat->hasArea()) {
-				combat->doCombat(creature, target->getPosition());
+				combat->executeAreaCombat(creature, target->getPosition());
 			} else {
-				combat->doCombat(creature, target);
+				combat->executeTargetCombat(creature, target);
 			}
 			break;
 		}
 
 		case VARIANT_POSITION: {
-			combat->doCombat(creature, variant.pos);
+			combat->executeAreaCombat(creature, variant.pos);
 			break;
 		}
 
 		case VARIANT_TARGETPOSITION: {
 			if (combat->hasArea()) {
-				combat->doCombat(creature, variant.pos);
+				combat->executeAreaCombat(creature, variant.pos);
 			} else {
 				combat->postCombatEffects(creature, variant.pos);
 				g_game.addMagicEffect(variant.pos, CONST_ME_POFF);
@@ -12485,7 +12494,7 @@ int LuaScriptInterface::luaCombatExecute(lua_State* L)
 				return 1;
 			}
 
-			combat->doCombat(creature, target);
+			combat->executeTargetCombat(creature, target);
 			break;
 		}
 

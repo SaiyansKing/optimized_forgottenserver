@@ -158,7 +158,7 @@ class Creature : virtual public Thing
 		virtual bool canSeeCreature(const Creature* creature) const;
 
 		virtual RaceType_t getRace() const {
-			return RACE_NONE;
+			return RACE_BLOOD;
 		}
 		virtual Skulls_t getSkull() const {
 			return skull;

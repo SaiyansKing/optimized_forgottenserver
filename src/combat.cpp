@@ -226,10 +226,11 @@ ReturnValue Combat::canTargetCreature(Player* attacker, Creature* target)
 		}
 	}
 
-	return Combat::canDoCombat(attacker, target);
+	CombatParams params;
+	return Combat::canDoTargetCombat(attacker, target, params);
 }
 
-ReturnValue Combat::canDoCombat(Creature* caster, Tile* tile, bool aggressive)
+ReturnValue Combat::canDoTileCombat(Creature* caster, Tile* tile, bool aggressive)
 {
 	if (tile->hasFlag(TILESTATE_BLOCKPROJECTILE | TILESTATE_FLOORCHANGE | TILESTATE_TELEPORT)) {
 		return RETURNVALUE_NOTENOUGHROOM;
@@ -282,10 +283,47 @@ bool Combat::isProtected(const Player* attacker, const Player* target)
 	return false;
 }
 
-ReturnValue Combat::canDoCombat(Creature* attacker, Creature* target)
+bool Combat::isTargetValid(Creature* target, const CombatParams& params) {
+	switch (params.validTargets) {
+		case COMBAT_TARGET_PARAM_PLAYERS:
+			if (!target->getPlayer()) 
+				return false;
+			break;
+		case COMBAT_TARGET_PARAM_MONSTERS:
+			if (!target->getMonster()) 
+				return false;
+			break;
+		case COMBAT_TARGET_PARAM_PLAYERSANDMONSTERS:
+			if (!target->getPlayer() && !target->getMonster()) 
+				return false;
+			break;
+		case COMBAT_TARGET_PARAM_NPCS:
+			if (!target->getNpc()) 
+				return false;
+			break;
+		case COMBAT_TARGET_PARAM_PLAYERSANDNPCS:
+			if (!target->getPlayer() && !target->getNpc())
+				return false;
+			break;
+		case COMBAT_TARGET_PARAM_MONSTERSANDNPCS:
+			if (!target->getMonster() && !target->getNpc())
+				return false;
+			break;
+		case COMBAT_TARGET_PARAM_ALL:
+		default:
+			break;
+	}
+	return true;
+}
+
+ReturnValue Combat::canDoTargetCombat(Creature* attacker, Creature* target, const CombatParams& params)
 {
 	if (!attacker) {
 		return g_events->eventCreatureOnTargetCombat(attacker, target);
+	}
+
+	if (!isTargetValid(target, params)) {
+		return RETURNVALUE_YOUMAYNOTATTACKTHISCREATURE;
 	}
 
 	if (const Player* targetPlayer = target->getPlayer()) {
@@ -425,6 +463,11 @@ bool Combat::setParam(CombatParam_t param, uint32_t value)
 
 		case COMBAT_PARAM_USECHARGES: {
 			params.useCharges = (value != 0);
+			return true;
+		}
+
+		case COMBAT_PARAM_VALIDTARGETS: {
+			params.validTargets = static_cast<TargetsParam_t>(value);
 			return true;
 		}
 	}
@@ -668,7 +711,7 @@ void Combat::addDistanceEffect(Creature* caster, const Position& fromPos, const 
 	}
 }
 
-void Combat::CombatFunc(Creature* caster, const Position& pos, const AreaCombat* area, const CombatParams& params, CombatFunction func, CombatDamage* data)
+void Combat::doCombatArea(Creature* caster, const Position& pos, const AreaCombat* area, const CombatParams& params, CombatDamage* data, CombatFunction combatCallback /*= CombatNullFunc*/)
 {
 	std::vector<Tile*> tileList;
 
@@ -705,7 +748,7 @@ void Combat::CombatFunc(Creature* caster, const Position& pos, const AreaCombat*
 	postCombatEffects(caster, pos, params);
 
 	for (Tile* tile : tileList) {
-		if (canDoCombat(caster, tile, params.aggressive) != RETURNVALUE_NOERROR) {
+		if (canDoTileCombat(caster, tile, params.aggressive) != RETURNVALUE_NOERROR) {
 			continue;
 		}
 
@@ -723,8 +766,8 @@ void Combat::CombatFunc(Creature* caster, const Position& pos, const AreaCombat*
 					}
 				}
 
-				if (!params.aggressive || (caster != creature && Combat::canDoCombat(caster, creature) == RETURNVALUE_NOERROR)) {
-					func(caster, creature, params, data);
+				if (!params.aggressive || (caster != creature && Combat::canDoTargetCombat(caster, creature, params) == RETURNVALUE_NOERROR)) {
+					combatCallback(caster, creature, params, data);
 					if (params.targetCallback) {
 						params.targetCallback->onTargetCombat(caster, creature);
 					}
@@ -738,39 +781,39 @@ void Combat::CombatFunc(Creature* caster, const Position& pos, const AreaCombat*
 	}
 }
 
-void Combat::doCombat(Creature* caster, Creature* target) const
+void Combat::executeTargetCombat(Creature* caster, Creature* target) const
 {
 	//target combat callback function
 	if (params.combatType != COMBAT_NONE) {
 		CombatDamage damage = getCombatDamage(caster, target);
 		if (damage.primary.type != COMBAT_MANADRAIN) {
-			doCombatHealth(caster, target, damage, params);
+			doCombatHealthTarget(caster, target, params, damage);
 		} else {
-			doCombatMana(caster, target, damage, params);
+			doCombatManaTarget(caster, target, params, damage);
 		}
 	} else {
-		doCombatDefault(caster, target, params);
+		doCombatTarget(caster, target, params, nullptr);
 	}
 }
 
-void Combat::doCombat(Creature* caster, const Position& position) const
+void Combat::executeAreaCombat(Creature* caster, const Position& position) const
 {
 	//area combat callback function
 	if (params.combatType != COMBAT_NONE) {
 		CombatDamage damage = getCombatDamage(caster, nullptr);
 		if (damage.primary.type != COMBAT_MANADRAIN) {
-			doCombatHealth(caster, position, area.get(), damage, params);
+			doCombatHealthArea(caster, position, area.get(), params, damage);
 		} else {
-			doCombatMana(caster, position, area.get(), damage, params);
+			doCombatManaArea(caster, position, area.get(), params, damage);
 		}
 	} else {
-		CombatFunc(caster, position, area.get(), params, CombatNullFunc, nullptr);
+		doCombatArea(caster, position, area.get(), params, nullptr);
 	}
 }
 
-void Combat::doCombatHealth(Creature* caster, Creature* target, CombatDamage& damage, const CombatParams& params)
+void Combat::doCombatTarget(Creature* caster, Creature* target, const CombatParams& params, CombatDamage* damage, CombatFunction combatCallback /*= CombatNullFunc*/)
 {
-	bool canCombat = !params.aggressive || (caster != target && Combat::canDoCombat(caster, target) == RETURNVALUE_NOERROR);
+	bool canCombat = !params.aggressive || (caster != target && Combat::canDoTargetCombat(caster, target, params) == RETURNVALUE_NOERROR);
 	if ((caster == target || canCombat) && params.impactEffect != CONST_ME_NONE) {
 		g_game.addMagicEffect(target->getPosition(), params.impactEffect);
 	}
@@ -780,113 +823,51 @@ void Combat::doCombatHealth(Creature* caster, Creature* target, CombatDamage& da
 			addDistanceEffect(caster, caster->getPosition(), target->getPosition(), params.distanceEffect);
 		}
 
-		CombatHealthFunc(caster, target, params, &damage);
+		combatCallback(caster, target, params, damage);
 		if (params.targetCallback) {
 			params.targetCallback->onTargetCombat(caster, target);
 		}
 	}
 }
 
-void Combat::doCombatHealth(Creature* caster, const Position& position, const AreaCombat* area, CombatDamage& damage, const CombatParams& params)
+void Combat::doCombatHealthTarget(Creature* caster, Creature* target, const CombatParams& params, CombatDamage& damage)
 {
-	CombatFunc(caster, position, area, params, CombatHealthFunc, &damage);
+	doCombatTarget(caster, target, params, &damage, CombatHealthFunc);
 }
 
-void Combat::doCombatMana(Creature* caster, Creature* target, CombatDamage& damage, const CombatParams& params)
+void Combat::doCombatHealthArea(Creature* caster, const Position& position, const AreaCombat* area, const CombatParams& params, CombatDamage& damage)
 {
-	bool canCombat = !params.aggressive || (caster != target && Combat::canDoCombat(caster, target) == RETURNVALUE_NOERROR);
-	if ((caster == target || canCombat) && params.impactEffect != CONST_ME_NONE) {
-		g_game.addMagicEffect(target->getPosition(), params.impactEffect);
-	}
-
-	if (canCombat) {
-		if (caster && params.distanceEffect != CONST_ANI_NONE) {
-			addDistanceEffect(caster, caster->getPosition(), target->getPosition(), params.distanceEffect);
-		}
-
-		CombatManaFunc(caster, target, params, &damage);
-		if (params.targetCallback) {
-			params.targetCallback->onTargetCombat(caster, target);
-		}
-	}
+	doCombatArea(caster, position, area, params, &damage, CombatHealthFunc);
 }
 
-void Combat::doCombatMana(Creature* caster, const Position& position, const AreaCombat* area, CombatDamage& damage, const CombatParams& params)
+void Combat::doCombatManaTarget(Creature* caster, Creature* target, const CombatParams& params, CombatDamage& damage)
 {
-	CombatFunc(caster, position, area, params, CombatManaFunc, &damage);
+	doCombatTarget(caster, target, params, &damage, CombatManaFunc);
 }
 
-void Combat::doCombatCondition(Creature* caster, const Position& position, const AreaCombat* area, const CombatParams& params)
+void Combat::doCombatManaArea(Creature* caster, const Position& position, const AreaCombat* area, const CombatParams& params, CombatDamage& damage)
 {
-	CombatFunc(caster, position, area, params, CombatConditionFunc, nullptr);
+	doCombatArea(caster, position, area, params, &damage, CombatManaFunc);
 }
 
-void Combat::doCombatCondition(Creature* caster, Creature* target, const CombatParams& params)
+void Combat::doCombatConditionTarget(Creature* caster, Creature* target, const CombatParams& params)
 {
-	bool canCombat = !params.aggressive || (caster != target && Combat::canDoCombat(caster, target) == RETURNVALUE_NOERROR);
-	if ((caster == target || canCombat) && params.impactEffect != CONST_ME_NONE) {
-		g_game.addMagicEffect(target->getPosition(), params.impactEffect);
-	}
-
-	if (canCombat) {
-		if (caster && params.distanceEffect != CONST_ANI_NONE) {
-			addDistanceEffect(caster, caster->getPosition(), target->getPosition(), params.distanceEffect);
-		}
-
-		CombatConditionFunc(caster, target, params, nullptr);
-		if (params.targetCallback) {
-			params.targetCallback->onTargetCombat(caster, target);
-		}
-	}
+	doCombatTarget(caster, target, params, nullptr, CombatConditionFunc);
 }
 
-void Combat::doCombatDispel(Creature* caster, const Position& position, const AreaCombat* area, const CombatParams& params)
+void Combat::doCombatConditionArea(Creature* caster, const Position& position, const AreaCombat* area, const CombatParams& params)
 {
-	CombatFunc(caster, position, area, params, CombatDispelFunc, nullptr);
+	doCombatArea(caster, position, area, params, nullptr, CombatConditionFunc);
 }
 
-void Combat::doCombatDispel(Creature* caster, Creature* target, const CombatParams& params)
+void Combat::doCombatDispelTarget(Creature* caster, Creature* target, const CombatParams& params)
 {
-	bool canCombat = !params.aggressive || (caster != target && Combat::canDoCombat(caster, target) == RETURNVALUE_NOERROR);
-	if ((caster == target || canCombat) && params.impactEffect != CONST_ME_NONE) {
-		g_game.addMagicEffect(target->getPosition(), params.impactEffect);
-	}
-
-	if (canCombat) {
-		CombatDispelFunc(caster, target, params, nullptr);
-		if (params.targetCallback) {
-			params.targetCallback->onTargetCombat(caster, target);
-		}
-
-		if (caster && params.distanceEffect != CONST_ANI_NONE) {
-			addDistanceEffect(caster, caster->getPosition(), target->getPosition(), params.distanceEffect);
-		}
-	}
+	doCombatTarget(caster, target, params, nullptr, CombatDispelFunc);
 }
 
-void Combat::doCombatDefault(Creature* caster, Creature* target, const CombatParams& params)
+void Combat::doCombatDispelArea(Creature* caster, const Position& position, const AreaCombat* area, const CombatParams& params)
 {
-	if (!params.aggressive || (caster != target && Combat::canDoCombat(caster, target) == RETURNVALUE_NOERROR)) {
-		SpectatorVector spectators;
-		g_game.map.getSpectators(spectators, target->getPosition(), true, true);
-
-		CombatNullFunc(caster, target, params, nullptr);
-		combatTileEffects(spectators, caster, target->getTile(), params);
-
-		if (params.targetCallback) {
-			params.targetCallback->onTargetCombat(caster, target);
-		}
-
-		/*
-		if (params.impactEffect != CONST_ME_NONE) {
-			g_game.addMagicEffect(target->getPosition(), params.impactEffect);
-		}
-		*/
-
-		if (caster && params.distanceEffect != CONST_ANI_NONE) {
-			addDistanceEffect(caster, caster->getPosition(), target->getPosition(), params.distanceEffect);
-		}
-	}
+	doCombatArea(caster, position, area, params, nullptr, CombatDispelFunc);
 }
 
 //**********************************************************//

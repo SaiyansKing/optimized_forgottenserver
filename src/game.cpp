@@ -3696,15 +3696,6 @@ void Game::combatGetTypeInfo(CombatType_t combatType, Creature* target, TextColo
 					effect = CONST_ME_HITBYPOISON;
 					splash = Item::CreateItem(ITEM_SMALLSPLASH, FLUID_SLIME);
 					break;
-				case RACE_BLOOD:
-					color = TEXTCOLOR_RED;
-					effect = CONST_ME_DRAWBLOOD;
-					if (const Tile* tile = target->getTile()) {
-						if (!tile->hasFlag(TILESTATE_PROTECTIONZONE)) {
-							splash = Item::CreateItem(ITEM_SMALLSPLASH, FLUID_BLOOD);
-						}
-					}
-					break;
 				case RACE_UNDEAD:
 					color = TEXTCOLOR_LIGHTGREY;
 					effect = CONST_ME_HITAREA;
@@ -3717,9 +3708,15 @@ void Game::combatGetTypeInfo(CombatType_t combatType, Creature* target, TextColo
 					color = TEXTCOLOR_ELECTRICPURPLE;
 					effect = CONST_ME_ENERGYHIT;
 					break;
+				case RACE_BLOOD:
 				default:
-					color = TEXTCOLOR_NONE;
-					effect = CONST_ME_NONE;
+					color = TEXTCOLOR_RED;
+					effect = CONST_ME_DRAWBLOOD;
+					if (const Tile* tile = target->getTile()) {
+						if (!tile->hasFlag(TILESTATE_PROTECTIONZONE)) {
+							splash = Item::CreateItem(ITEM_SMALLSPLASH, FLUID_BLOOD);
+						}
+					}
 					break;
 			}
 
