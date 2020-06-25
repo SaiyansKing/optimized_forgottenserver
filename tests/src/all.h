@@ -1,7 +1,7 @@
 #include <boost/filesystem.hpp>
 
-// Include main Catch framework library
-#include "../lib/catch.hpp"
+// Include main Doctest framework library
+#include "doctest/doctest/doctest.h"
 
 // Include main SRC library
 #include "../../src/otpch.h"
@@ -81,4 +81,4 @@
 #include "../../src/weapons.h"
 #include "../../src/wildcardtree.h"
 
-namespace fs = boost::filesystem; 
+namespace fs = boost::filesystem;

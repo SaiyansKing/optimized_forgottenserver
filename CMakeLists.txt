@@ -30,8 +30,8 @@ include(ToolClangFormat)
 include(ToolCTags)
 include(ToolGitSubmodule)
 
+include(doctest)
+
 include(OptionCompilerWarnings)
-# include(OtbrLib)
-# include(Otbr)
 add_subdirectory(3rd)
 add_subdirectory(src)

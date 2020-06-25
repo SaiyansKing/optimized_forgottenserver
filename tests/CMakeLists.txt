@@ -1,13 +1,22 @@
-project(otbr_unittest)
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
-add_executable(otbr_unittest
-              main.cpp
-              account_test.cpp)
+enable_testing()
 
-target_compile_definitions(otbr_unittest PUBLIC UNIT_TESTING=1 DEBUG_LOG=1 -fvar-tracking-assignments)
+project(canary-tests)
 
-target_link_libraries(otbr_unittest Catch2::Catch2 otbr_lib)
+add_subdirectory(src)
 
-include(CTest)
-include(Catch)
-catch_discover_tests(otbr_unittest)
+# Make test executable
+add_executable(canary-tests main.cpp ${CANARY_TEST_SRC})
+
+target_compile_definitions(canary-tests PUBLIC -DUNIT_TESTING -DDEBUG_LOG)
+
+target_link_libraries(canary-tests doctest::doctest canary_lib)
+
+set_target_properties(canary-tests
+    PROPERTIES
+      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)
+
+doctest_discover_tests(canary-tests
+                      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/src)

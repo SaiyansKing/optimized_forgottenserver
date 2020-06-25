@@ -13,4 +13,4 @@ services:
       - MYSQL_PASSWORD=otserver
       - MYSQL_RANDOM_ROOT_PASSWORD=yes
     ports:
-      - "3307:3307"
+      - "3307:3307" 

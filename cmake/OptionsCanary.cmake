@@ -1,5 +1,5 @@
 # === Debug Log ===
-# -DOPTIONS_ENABLE_DEBUG_LOG=1
+# -DOPTIONS_ENABLE_DEBUG_LOG=ON
 option(OPTIONS_ENABLE_DEBUG_LOG
        "Enable ccache"
        OFF
@@ -12,7 +12,7 @@ else()
 endif()
 
 # === Source Code Doxygen Documentation ===
-# -DOPTIONS_ENABLE_DOXYGEN=1
+# -DOPTIONS_ENABLE_DOXYGEN=ON
 option(OPTIONS_ENABLE_DOXYGEN
       "Build source code documentation"
       OFF)
@@ -48,7 +48,7 @@ endif()
 
 
 # === Datapack  LDoc Documentation ===
-# -DOPTIONS_ENABLE_LDOC=1
+# -DOPTIONS_ENABLE_LDOC=ON
 option(OPTIONS_ENABLE_LDOC
       "Build datapack documentation"
       OFF)
@@ -84,15 +84,16 @@ else()
 endif()
 
 # === Unit Test ===
-# -DOPTIONS_ENABLE_UNIT_TEST=1
+# -DOPTIONS_ENABLE_UNIT_TEST=ON
 option(OPTIONS_ENABLE_UNIT_TEST
-       "Enable Unit Test Build"
+       "Enable Unit-Test Build"
        OFF
       )
 if(OPTIONS_ENABLE_UNIT_TEST)
+  log_option_enabled("unit-test")
   enable_testing()
-  add_subdirectory(tests)
+  add_subdirectory(../tests tests)
   target_compile_definitions(common_project_options INTERFACE UNIT_TESTING=1)
 else()
-  log_option_disabled("unit test")
+  log_option_disabled("unit-test")
 endif()
