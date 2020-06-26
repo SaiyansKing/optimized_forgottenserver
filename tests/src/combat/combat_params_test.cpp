@@ -1,7 +1,7 @@
 #include "../all.h"
 
-TEST_SUITE( "Combat Test") {
-	TEST_CASE("CombatParam default attributes") {
+TEST_SUITE("Combat Test") {
+  TEST_CASE("CombatParam default attributes") {
     CombatParams params;
 
     CHECK(params.itemId == 0);

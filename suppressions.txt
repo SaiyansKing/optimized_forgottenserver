@@ -1,6 +1,1 @@
-constParameter
-functionStatic
-missingIncludeSystem
-unmatchedSuppression
-unusedFunction
 *:external/*

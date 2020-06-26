@@ -35,7 +35,7 @@ function(add_format_target TARGET)
         set(FORMAT_TARGET_NAME ${TARGET}_format)
 
         add_custom_target(${FORMAT_TARGET_NAME}
-                          COMMAND ${CLANG-FORMAT} -i -style=file ${FORMAT_SOURCES}
+                          COMMAND ${CLANG-FORMAT} -i -style=Google ${FORMAT_SOURCES}
                           COMMENT "Formatting ${TARGET}..."
                          )
 
