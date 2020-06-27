@@ -1,0 +1,47 @@
+name: UnitTest
+on: [pull_request]
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+
+    services:
+      mariadb:
+        image: mariadb:10
+        ports:
+          - 3307:3306
+        env:
+          MYSQL_DATABASE: otserver
+          MYSQL_USER: otserver
+          MYSQL_PASSWORD: otserver
+          MYSQL_RANDOM_ROOT_PASSWORD: yes
+
+    steps:
+    - uses: actions/checkout@master
+      with:
+        submodules: true
+
+    - name: Install Dependencies
+      run: >
+        sudo apt-get update && sudo apt-get install cmake build-essential
+        liblua5.2-dev libmysqlclient-dev libboost-system-dev
+        libboost-iostreams-dev libboost-filesystem-dev libpugixml-dev
+        libboost-date-time-dev libgmp-dev zip mariadb-client*
+
+    - name: Prepare build Environment
+      run: |
+        mkdir -p ${{ runner.workspace }}/canary-server/build && cd ${{ runner.workspace }}/canary-server/build
+        cmake -DCMAKE_BUILD_TYPE=Debug -DOPTIONS_ENABLE_DEBUG_LOG=ON -DOPTIONS_ENABLE_UNIT_TEST=ON  ..
+
+    - name: Build
+      run: |
+        cd ${{ runner.workspace }}/canary-server/build
+        make -j `nproc`
+
+    - name: Import schema
+      run: |
+        mysql --host=127.0.0.1  --port=3307 --user=otserver --password=otserver otserver < ${{ runner.workspace }}/canary-server/schema.sql
+
+    - name: Run UnitTest
+      run: |
+        cd ${{ runner.workspace }}/canary-server/build/bin
+        ./canary-tests

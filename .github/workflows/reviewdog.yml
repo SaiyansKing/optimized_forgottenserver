@@ -40,13 +40,13 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         reporter: github-pr-check
 
-    # - name: cppcheck
-    #   env:
-    #     REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #   run: |
-    #     cd ${{ runner.workspace }}/canary-server
-    #     cppcheck --version
-    #     reviewdog -reporter=github-pr-check -runners=cppcheck
+    - name: cppcheck
+      env:
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        cd ${{ runner.workspace }}/canary-server
+        cppcheck --version
+        reviewdog -reporter=github-pr-check -runners=cppcheck
 
     - name: luacheck
       env:
