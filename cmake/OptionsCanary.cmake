@@ -1,20 +1,20 @@
 # === Debug Log ===
 # -DOPTIONS_ENABLE_DEBUG_LOG=ON
 option(OPTIONS_ENABLE_DEBUG_LOG
-       "Enable ccache"
+       "[Canary] Enable ccache"
        OFF
       )
 if(OPTIONS_ENABLE_DEBUG_LOG)
   add_definitions( -DDEBUG_LOG )
-  log_option_enabled("debug log")
+  log_option_enabled("[Canary] debug log")
 else()
-  log_option_disabled("debug log")
+  log_option_disabled("[Canary] debug log")
 endif()
 
 # === Source Code Doxygen Documentation ===
 # -DOPTIONS_ENABLE_DOXYGEN=ON
 option(OPTIONS_ENABLE_DOXYGEN
-      "Build source code documentation"
+      "[Canary] Build source code documentation"
       OFF)
 if(OPTIONS_ENABLE_DOXYGEN)
 
@@ -22,7 +22,7 @@ if(OPTIONS_ENABLE_DOXYGEN)
 
   find_package(Doxygen)
   if (DOXYGEN_FOUND)
-    log_option_enabled("doxygen")
+    log_option_enabled("[Canary] doxygen")
 
     # set input and output files
     set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in)
@@ -43,14 +43,14 @@ if(OPTIONS_ENABLE_DOXYGEN)
   endif ()
 
 else()
-  log_option_disabled("doxygen")
+  log_option_disabled("[Canary] doxygen")
 endif()
 
 
 # === Datapack  LDoc Documentation ===
 # -DOPTIONS_ENABLE_LDOC=ON
 option(OPTIONS_ENABLE_LDOC
-      "Build datapack documentation"
+      "[Canary] Build datapack documentation"
       OFF)
 if(OPTIONS_ENABLE_LDOC)
 
@@ -60,7 +60,7 @@ if(OPTIONS_ENABLE_LDOC)
   endif()
 
   if (LDOC_EXECUTABLE)
-    log_option_enabled("ldoc")
+    log_option_enabled("[Canary] ldoc")
 
     # set input and output files
     set(LDOC_IN ${CMAKE_CURRENT_SOURCE_DIR}/docs/config.ld.in)
@@ -80,20 +80,20 @@ if(OPTIONS_ENABLE_LDOC)
   endif ()
 
 else()
-  log_option_disabled("ldoc")
+  log_option_disabled("[Canary] ldoc")
 endif()
 
 # === Unit Test ===
 # -DOPTIONS_ENABLE_UNIT_TEST=ON
 option(OPTIONS_ENABLE_UNIT_TEST
-       "Enable Unit-Test Build"
+       "[Canary] Enable Unit-Test Build"
        OFF
       )
 if(OPTIONS_ENABLE_UNIT_TEST)
-  log_option_enabled("unit-test")
+  log_option_enabled("[Canary] unit-test")
   enable_testing()
   add_subdirectory(../tests tests)
   target_compile_definitions(common_project_options INTERFACE UNIT_TESTING=1)
 else()
-  log_option_disabled("unit-test")
+  log_option_disabled("[Canary] unit-test")
 endif()

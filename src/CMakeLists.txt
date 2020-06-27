@@ -35,7 +35,7 @@ find_package(GMP REQUIRED)
 # *****************************************************************************
 add_library(canary_lib "")
 target_sources(canary_lib
-  PUBLIC
+  PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/otpch.cpp
     ${CMAKE_CURRENT_LIST_DIR}/actions.cpp
     ${CMAKE_CURRENT_LIST_DIR}/ban.cpp
