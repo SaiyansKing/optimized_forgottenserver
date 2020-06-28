@@ -361,7 +361,7 @@ settings.json
 c_cpp_properties.json
 
 #############
-## Canary / OT
+## Canary
 #############
 config.lua
 canary
