@@ -31,7 +31,6 @@
 #include "iologindata.h"
 #include "monster.h"
 #include "movement.h"
-#include "scheduler.h"
 #include "weapons.h"
 
 extern ConfigManager g_config;
@@ -1341,7 +1340,7 @@ bool Player::closeShopWindow(bool sendCloseShopWindow /*= true*/)
 void Player::onWalk(Direction& dir)
 {
 	Creature::onWalk(dir);
-	setNextActionTask(nullptr);
+	stopNextActionTask();
 	setNextAction(OTSYS_TIME() + getStepDuration(dir));
 }
 
@@ -1510,46 +1509,56 @@ void Player::checkTradeState(const Item* item)
 	}
 }
 
-void Player::setNextWalkActionTask(SchedulerTask* task)
+void Player::stopNextWalkActionTask()
 {
 	if (walkTaskEvent != 0) {
-		g_scheduler.stopEvent(walkTaskEvent);
+		g_dispatcher.stopEvent(walkTaskEvent);
 		walkTaskEvent = 0;
 	}
 
 	delete walkTask;
-	walkTask = task;
+	walkTask = nullptr;
 }
 
-void Player::setNextWalkTask(SchedulerTask* task)
+void Player::stopNextWalkTask()
 {
 	if (nextStepEvent != 0) {
-		g_scheduler.stopEvent(nextStepEvent);
+		g_dispatcher.stopEvent(nextStepEvent);
 		nextStepEvent = 0;
-	}
-
-	if (task) {
-		nextStepEvent = g_scheduler.addEvent(task);
-		resetIdleTime();
 	}
 }
 
-void Player::setNextActionTask(SchedulerTask* task)
+void Player::stopNextActionTask()
 {
 	if (actionTaskEvent != 0) {
-		g_scheduler.stopEvent(actionTaskEvent);
+		g_dispatcher.stopEvent(actionTaskEvent);
 		actionTaskEvent = 0;
 	}
+}
 
-	if (task) {
-		actionTaskEvent = g_scheduler.addEvent(task);
-		resetIdleTime();
-	}
+void Player::setNextWalkActionTask(uint32_t delay, std::function<void (void)> f)
+{
+	stopNextWalkActionTask();
+	walkTask = new std::pair<uint32_t, std::function<void (void)>>(delay, std::move(f));
+}
+
+void Player::setNextWalkTask(uint32_t delay, std::function<void (void)> f)
+{
+	stopNextWalkTask();
+	nextStepEvent = g_dispatcher.addEvent(delay, std::move(f));
+	resetIdleTime();
+}
+
+void Player::setNextActionTask(uint32_t delay, std::function<void (void)> f)
+{
+	stopNextActionTask();
+	actionTaskEvent = g_dispatcher.addEvent(delay, std::move(f));
+	resetIdleTime();
 }
 
 uint32_t Player::getNextActionTime() const
 {
-	return std::max<int64_t>(SCHEDULER_MINTICKS, nextAction - OTSYS_TIME());
+	return std::max<int64_t>(SERVER_BEAT_MILISECONDS, nextAction - OTSYS_TIME());
 }
 
 void Player::onThink(uint32_t interval)
@@ -1772,8 +1781,6 @@ void Player::addExperience(Creature* source, uint64_t exp, bool sendText/* = fal
 		mana = manaMax;
 
 		updateBaseSpeed();
-		setBaseSpeed(getBaseSpeed());
-
 		g_game.changeSpeed(this, 0);
 		g_game.addCreatureHealth(this);
 		#if GAME_FEATURE_PARTY_LIST > 0
@@ -1857,8 +1864,6 @@ void Player::removeExperience(uint64_t exp, bool sendText/* = false*/)
 		mana = manaMax;
 
 		updateBaseSpeed();
-		setBaseSpeed(getBaseSpeed());
-
 		g_game.changeSpeed(this, 0);
 		g_game.addCreatureHealth(this);
 		#if GAME_FEATURE_PARTY_LIST > 0
@@ -3382,11 +3387,10 @@ void Player::doAttacking(uint32_t)
 			result = Weapon::useFist(this, attackedCreature);
 		}
 
-		SchedulerTask* task = createSchedulerTask(std::max<uint32_t>(SCHEDULER_MINTICKS, delay), std::bind(&Game::checkCreatureAttack, &g_game, getID()));
 		if (!classicSpeed) {
-			setNextActionTask(task);
+			setNextActionTask(std::max<uint32_t>(SERVER_BEAT_MILISECONDS, delay), std::bind(&Game::checkCreatureAttack, &g_game, getID()));
 		} else {
-			g_scheduler.addEvent(task);
+			g_dispatcher.addEvent(std::max<uint32_t>(SERVER_BEAT_MILISECONDS, delay), std::bind(&Game::checkCreatureAttack, &g_game, getID()));
 		}
 
 		if (result) {
@@ -3433,14 +3437,14 @@ void Player::setChaseMode(bool mode)
 
 void Player::onWalkAborted()
 {
-	setNextWalkActionTask(nullptr);
+	stopNextWalkActionTask();
 	sendCancelWalk();
 }
 
 void Player::onWalkComplete()
 {
 	if (walkTask) {
-		walkTaskEvent = g_scheduler.addEvent(walkTask);
+		walkTaskEvent = g_dispatcher.addEvent(walkTask->first, std::move(walkTask->second));
 		walkTask = nullptr;
 	}
 }
@@ -4763,7 +4767,7 @@ void Player::addScheduledUpdates(uint32_t flags)
 {
 	scheduledUpdates |= flags;
 	if (!scheduledUpdate) {
-		g_scheduler.addEvent(createSchedulerTask(SCHEDULER_MINTICKS, std::bind(&Game::updatePlayerEvent, &g_game, getID())));
+		g_dispatcher.addEvent(SERVER_BEAT_MILISECONDS, std::bind(&Game::updatePlayerEvent, &g_game, getID()));
 		scheduledUpdate = true;
 	}
 }

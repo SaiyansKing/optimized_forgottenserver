@@ -23,7 +23,6 @@
 #include "game.h"
 #include "monster.h"
 #include "configmanager.h"
-#include "scheduler.h"
 
 double Creature::speedA = 857.36;
 double Creature::speedB = 261.29;
@@ -282,13 +281,13 @@ void Creature::addEventWalk(bool firstStep)
 		g_game.checkCreatureWalk(getID());
 	}
 
-	eventWalk = g_scheduler.addEvent(createSchedulerTask(ticks, std::bind(&Game::checkCreatureWalk, &g_game, getID())));
+	eventWalk = g_dispatcher.addEvent(ticks, std::bind(&Game::checkCreatureWalk, &g_game, getID()));
 }
 
 void Creature::stopEventWalk()
 {
 	if (eventWalk != 0) {
-		g_scheduler.stopEvent(eventWalk);
+		g_dispatcher.stopEvent(eventWalk);
 		eventWalk = 0;
 	}
 }
@@ -860,7 +859,7 @@ bool Creature::setAttackedCreature(Creature* creature)
 void Creature::getPathSearchParams(const Creature*, FindPathParams& fpp) const
 {
 	fpp.fullPathSearch = !hasFollowPath;
-	fpp.clearSight = true;
+	fpp.clearSight = false;
 	fpp.maxSearchDist = 12;
 	fpp.minTargetDist = 1;
 	fpp.maxTargetDist = 1;
@@ -1134,7 +1133,7 @@ bool Creature::addCondition(Condition* condition, bool force/* = false*/)
 	if (!force && condition->getType() == CONDITION_HASTE && hasCondition(CONDITION_PARALYZE)) {
 		int64_t walkDelay = getWalkDelay();
 		if (walkDelay > 0) {
-			g_scheduler.addEvent(createSchedulerTask(walkDelay, std::bind(&Game::forceAddCondition, &g_game, getID(), condition)));
+			g_dispatcher.addEvent(walkDelay, std::bind(&Game::forceAddCondition, &g_game, getID(), condition));
 			return false;
 		}
 	}
@@ -1179,7 +1178,7 @@ void Creature::removeCondition(ConditionType_t type, bool force/* = false*/)
 		if (!force && type == CONDITION_PARALYZE) {
 			int64_t walkDelay = getWalkDelay();
 			if (walkDelay > 0) {
-				g_scheduler.addEvent(createSchedulerTask(walkDelay, std::bind(&Game::forceRemoveCondition, &g_game, getID(), type)));
+				g_dispatcher.addEvent(walkDelay, std::bind(&Game::forceRemoveCondition, &g_game, getID(), type));
 				return;
 			}
 		}
@@ -1200,7 +1199,7 @@ void Creature::removeCondition(ConditionType_t type, ConditionId_t conditionId, 
 		if (!force && type == CONDITION_PARALYZE) {
 			int64_t walkDelay = getWalkDelay();
 			if (walkDelay > 0) {
-				g_scheduler.addEvent(createSchedulerTask(walkDelay, std::bind(&Game::forceRemoveCondition, &g_game, getID(), type)));
+				g_dispatcher.addEvent(walkDelay, std::bind(&Game::forceRemoveCondition, &g_game, getID(), type));
 				return;
 			}
 		}
@@ -1225,7 +1224,7 @@ void Creature::removeCondition(Condition* condition, bool force/* = false*/)
 	if (!force && condition->getType() == CONDITION_PARALYZE) {
 		int64_t walkDelay = getWalkDelay();
 		if (walkDelay > 0) {
-			g_scheduler.addEvent(createSchedulerTask(walkDelay, std::bind(&Game::forceRemoveCondition, &g_game, getID(), condition->getType())));
+			g_dispatcher.addEvent(walkDelay, std::bind(&Game::forceRemoveCondition, &g_game, getID(), condition->getType()));
 			return;
 		}
 	}
@@ -1332,17 +1331,7 @@ int64_t Creature::getStepDuration() const
 	}
 
 	#if GAME_FEATURE_NEWSPEED_LAW > 0
-	uint32_t calculatedStepSpeed;
 	uint32_t groundSpeed;
-	int32_t stepSpeed = getStepSpeed();
-	if (stepSpeed > -Creature::speedB) {
-		calculatedStepSpeed = floor((Creature::speedA * log((stepSpeed / 2) + Creature::speedB) + Creature::speedC) + 0.5);
-		if (calculatedStepSpeed == 0) {
-			calculatedStepSpeed = 1;
-		}
-	} else {
-		calculatedStepSpeed = 1;
-	}
 
 	Item* ground = tile->getGround();
 	if (ground) {
@@ -1354,8 +1343,8 @@ int64_t Creature::getStepDuration() const
 		groundSpeed = 150;
 	}
 
-	double duration = std::floor(1000 * groundSpeed / calculatedStepSpeed);
-	int64_t stepDuration = std::ceil(duration / 50) * 50;
+	int64_t stepDuration = 1000 * groundSpeed / cachedFormulatedSpeed;
+	stepDuration = ((stepDuration + SERVER_BEAT_MILISECONDS - 1) / SERVER_BEAT_MILISECONDS) * SERVER_BEAT_MILISECONDS;
 
 	const Monster* monster = getMonster();
 	if (monster && monster->isTargetNearby() && !monster->isFleeing() && !monster->getMaster()) {
@@ -1380,7 +1369,10 @@ int64_t Creature::getStepDuration() const
 		groundSpeed = 150;
 	}
 
-	return ((1000 * groundSpeed) / stepSpeed);
+	int64_t stepDuration = 1000 * groundSpeed / stepSpeed;
+	stepDuration = ((stepDuration + SERVER_BEAT_MILISECONDS - 1) / SERVER_BEAT_MILISECONDS) * SERVER_BEAT_MILISECONDS;
+
+	return stepDuration;
 	#endif
 }
 

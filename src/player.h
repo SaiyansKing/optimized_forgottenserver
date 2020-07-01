@@ -43,7 +43,6 @@ class Weapon;
 class ProtocolGame;
 class Npc;
 class Party;
-class SchedulerTask;
 class Bed;
 class Guild;
 
@@ -1364,9 +1363,12 @@ class Player final : public Creature, public Cylinder
 
 		void updateInventoryWeight();
 
-		void setNextWalkActionTask(SchedulerTask* task);
-		void setNextWalkTask(SchedulerTask* task);
-		void setNextActionTask(SchedulerTask* task);
+		void stopNextWalkActionTask();
+		void stopNextWalkTask();
+		void stopNextActionTask();
+		void setNextWalkActionTask(uint32_t delay, std::function<void (void)> f);
+		void setNextWalkTask(uint32_t delay, std::function<void (void)> f);
+		void setNextActionTask(uint32_t delay, std::function<void (void)> f);
 
 		void death(Creature* lastHitCreature) override;
 		bool dropCorpse(Creature* lastHitCreature, Creature* mostDamageCreature, bool lastHitUnjustified, bool mostDamageUnjustified) override;
@@ -1466,7 +1468,7 @@ class Player final : public Creature, public Cylinder
 		Party* party = nullptr;
 		Player* tradePartner = nullptr;
 		ProtocolGame_ptr client;
-		SchedulerTask* walkTask = nullptr;
+		std::pair<uint32_t, std::function<void (void)>>* walkTask = nullptr;
 		Town* town = nullptr;
 		Vocation* vocation = nullptr;
 

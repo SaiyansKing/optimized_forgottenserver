@@ -48,9 +48,9 @@ class ProtocolLogin : public Protocol
 		void disconnectClient(const std::string& message);
 
 		#if GAME_FEATURE_SESSIONKEY > 0
-		void getCharacterList(const std::string accountName, const std::string password, const std::string token);
+		void getCharacterList(const std::string& accountName, const std::string& password, const std::string& token);
 		#else
-		void getCharacterList(const std::string accountName, const std::string password);
+		void getCharacterList(const std::string& accountName, const std::string& password);
 		#endif
 };
 

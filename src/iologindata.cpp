@@ -657,6 +657,9 @@ bool IOLoginData::loadPlayer(Player* player, DBResult_ptr result)
 	player->updateBaseSpeed();
 	player->updateInventoryWeight();
 	player->updateItemsLight(true);
+	#if GAME_FEATURE_NEWSPEED_LAW > 0
+	player->cacheSpeed();
+	#endif
 	return true;
 }
 

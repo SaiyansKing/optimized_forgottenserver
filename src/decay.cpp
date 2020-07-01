@@ -21,7 +21,6 @@
 
 #include "decay.h"
 #include "game.h"
-#include "scheduler.h"
 
 extern Game g_game;
 Decay g_decay;
@@ -34,11 +33,11 @@ void Decay::startDecay(Item* item, int32_t duration)
 
 	int64_t timestamp = OTSYS_TIME() + static_cast<int64_t>(duration);
 	if (decayMap.empty()) {
-		eventId = g_scheduler.addEvent(createSchedulerTask(std::max<int32_t>(SCHEDULER_MINTICKS, duration), std::bind(&Decay::checkDecay, this)));
+		eventId = g_dispatcher.addEvent(std::max<int32_t>(SERVER_BEAT_MILISECONDS, duration), std::bind(&Decay::checkDecay, this));
 	} else {
 		if (timestamp < decayMap.begin()->first) {
-			g_scheduler.stopEvent(eventId);
-			eventId = g_scheduler.addEvent(createSchedulerTask(std::max<int32_t>(SCHEDULER_MINTICKS, duration), std::bind(&Decay::checkDecay, this)));
+			g_dispatcher.stopEvent(eventId);
+			eventId = g_dispatcher.addEvent(std::max<int32_t>(SERVER_BEAT_MILISECONDS, duration), std::bind(&Decay::checkDecay, this));
 		}
 	}
 
@@ -118,6 +117,6 @@ void Decay::checkDecay()
 	}
 
 	if (it != end) {
-		eventId = g_scheduler.addEvent(createSchedulerTask(std::max<int32_t>(SCHEDULER_MINTICKS, static_cast<int32_t>(it->first - timestamp)), std::bind(&Decay::checkDecay, this)));
+		eventId = g_dispatcher.addEvent(std::max<int32_t>(SERVER_BEAT_MILISECONDS, static_cast<int32_t>(it->first - timestamp)), std::bind(&Decay::checkDecay, this));
 	}
 }

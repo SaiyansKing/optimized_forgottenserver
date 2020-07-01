@@ -24,7 +24,7 @@
 #include "position.h"
 #include "baseevents.h"
 
-enum RaidState_t {
+enum RaidState_t : uint8_t {
 	RAIDSTATE_IDLE,
 	RAIDSTATE_EXECUTING,
 };
@@ -32,6 +32,14 @@ enum RaidState_t {
 struct MonsterSpawn {
 	MonsterSpawn(std::string name, uint32_t minAmount, uint32_t maxAmount) :
 		name(std::move(name)), minAmount(minAmount), maxAmount(maxAmount) {}
+
+	// non-copyable
+	MonsterSpawn(const MonsterSpawn&) = delete;
+	MonsterSpawn& operator=(const MonsterSpawn&) = delete;
+
+	// moveable
+	MonsterSpawn(MonsterSpawn&& rhs) noexcept : name(std::move(rhs.name)), minAmount(rhs.minAmount), maxAmount(rhs.maxAmount) {}
+	MonsterSpawn& operator=(const MonsterSpawn&&) = delete;
 
 	std::string name;
 	uint32_t minAmount;
@@ -50,7 +58,6 @@ class Raids
 {
 	public:
 		Raids();
-		~Raids();
 
 		// non-copyable
 		Raids(const Raids&) = delete;
@@ -94,7 +101,7 @@ class Raids
 	private:
 		LuaScriptInterface scriptInterface{"Raid Interface"};
 
-		std::list<Raid*> raidList;
+		std::vector<Raid> raidList;
 		Raid* running = nullptr;
 		uint64_t lastRaidEnd = 0;
 		uint64_t checkRaidsEvent = 0;
@@ -112,6 +119,25 @@ class Raid
 		// non-copyable
 		Raid(const Raid&) = delete;
 		Raid& operator=(const Raid&) = delete;
+
+		// moveable
+		Raid(Raid&& rhs) noexcept : raidEvents(std::move(rhs.raidEvents)), name(std::move(rhs.name)),
+			margin(rhs.margin), nextEventEvent(rhs.nextEventEvent), interval(rhs.interval), nextEvent(rhs.nextEvent),
+			state(rhs.state), loaded(rhs.loaded), repeat(rhs.repeat) {}
+		Raid& operator=(Raid&& rhs) noexcept {
+			if (this != &rhs) {
+				raidEvents = std::move(rhs.raidEvents);
+				name = std::move(rhs.name);
+				margin = rhs.margin;
+				nextEventEvent = rhs.nextEventEvent;
+				interval = rhs.interval;
+				nextEvent = rhs.nextEvent;
+				state = rhs.state;
+				loaded = rhs.loaded;
+				repeat = rhs.repeat;
+			}
+			return *this;
+		}
 
 		bool loadFromXml(const std::string& filename);
 
@@ -205,7 +231,7 @@ class AreaSpawnEvent final : public RaidEvent
 		bool executeEvent() override;
 
 	private:
-		std::list<MonsterSpawn> spawnList;
+		std::vector<MonsterSpawn> spawnList;
 		Position fromPos, toPos;
 };
 

@@ -31,8 +31,7 @@ extern ConfigManager g_config;
 Protocol::~Protocol()
 {
 	if (compreesionEnabled) {
-		deflateEnd(defStream);
-		delete defStream;
+		deflateEnd(defStream.get());
 	}
 }
 
@@ -516,12 +515,12 @@ void Protocol::enableCompression()
 	{
 		int32_t compressionLevel = g_config.getNumber(ConfigManager::COMPRESSION_LEVEL);
 		if (compressionLevel != 0) {
-			defStream = new z_stream;
+			defStream.reset(new z_stream);
 			defStream->zalloc = Z_NULL;
 			defStream->zfree = Z_NULL;
 			defStream->opaque = Z_NULL;
-			if (deflateInit2(defStream, compressionLevel, Z_DEFLATED, -15, 9, Z_DEFAULT_STRATEGY) != Z_OK) {
-				delete defStream;
+			if (deflateInit2(defStream.get(), compressionLevel, Z_DEFLATED, -15, 9, Z_DEFAULT_STRATEGY) != Z_OK) {
+				defStream.reset();
 				std::cout << "Zlib deflateInit2 error: " << (defStream->msg ? defStream->msg : "unknown error") << std::endl;
 			} else {
 				compreesionEnabled = true;
@@ -538,12 +537,12 @@ bool Protocol::compression(OutputMessage& msg)
 	defStream->next_out = defBuffer;
 	defStream->avail_out = NETWORKMESSAGE_MAXSIZE;
 
-	int32_t ret = deflate(defStream, Z_FINISH);
+	int32_t ret = deflate(defStream.get(), Z_FINISH);
 	if (ret != Z_OK && ret != Z_STREAM_END) {
 		return false;
 	}
 	uint32_t totalSize = static_cast<uint32_t>(defStream->total_out);
-	deflateReset(defStream);
+	deflateReset(defStream.get());
 	if (totalSize == 0) {
 		return false;
 	}
