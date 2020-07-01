@@ -103,7 +103,7 @@ class Protocol : public std::enable_shared_from_this<Protocol>
 		friend class Connection;
 
 		OutputMessage_ptr outputBuffer;
-		z_stream* defStream = nullptr;
+		std::unique_ptr<z_stream> defStream;
 
 		const ConnectionWeak_ptr connection;
 		uint32_t key[4] = {};

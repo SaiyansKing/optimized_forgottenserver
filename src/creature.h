@@ -59,7 +59,7 @@ enum slots_t : uint8_t {
 
 struct FindPathParams {
 	bool fullPathSearch = true;
-	bool clearSight = true;
+	bool clearSight = false;
 	bool allowDiagonal = true;
 	bool keepDistance = false;
 	int32_t maxSearchDist = 0;
@@ -213,7 +213,10 @@ class Creature : virtual public Thing
 		void setSpeed(int32_t varSpeedDelta) {
 			int32_t oldSpeed = getSpeed();
 			varSpeed = varSpeedDelta;
-
+			
+			#if GAME_FEATURE_NEWSPEED_LAW > 0
+			cacheSpeed();
+			#endif
 			if (getSpeed() <= 0) {
 				stopEventWalk();
 				cancelNextWalk = true;
@@ -221,6 +224,20 @@ class Creature : virtual public Thing
 				addEventWalk();
 			}
 		}
+
+		#if GAME_FEATURE_NEWSPEED_LAW > 0
+		void cacheSpeed() {
+			int32_t stepSpeed = getStepSpeed();
+			if (stepSpeed > -Creature::speedB) {
+				cachedFormulatedSpeed = std::floor((Creature::speedA * std::log((stepSpeed / 2) + Creature::speedB) + Creature::speedC) + 0.5);
+				if (cachedFormulatedSpeed == 0) {
+					cachedFormulatedSpeed = 1;
+				}
+			} else {
+				cachedFormulatedSpeed = 1;
+			}
+		}
+		#endif
 
 		void setBaseSpeed(uint32_t newBaseSpeed) {
 			baseSpeed = newBaseSpeed;
@@ -502,6 +519,9 @@ class Creature : virtual public Thing
 		uint32_t referenceCounter = 0;
 		uint32_t id = 0;
 		uint32_t scriptEventsBitField = 0;
+		#if GAME_FEATURE_NEWSPEED_LAW > 0
+		uint32_t cachedFormulatedSpeed = 1;
+		#endif
 		uint32_t walkUpdateTicks = 0;
 		uint32_t lastHitCreatureId = 0;
 		uint32_t blockCount = 0;

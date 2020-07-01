@@ -24,11 +24,6 @@
 
 extern Game g_game;
 
-Task* createTask(std::function<void (void)> f)
-{
-	return new Task(std::move(f));
-}
-
 void Dispatcher::threadMain()
 {
 	io_service.run();
@@ -50,7 +45,7 @@ void Dispatcher::addTask(std::function<void (void)> functor)
 		(f)();
 	});
 	#else
-		[this, functor]() {
+	[this, functor]() {
 		++dispatcherCycle;
 
 		// execute it
@@ -59,31 +54,61 @@ void Dispatcher::addTask(std::function<void (void)> functor)
 	#endif
 }
 
-void Dispatcher::addTask(Task* task)
+uint64_t Dispatcher::addEvent(uint32_t delay, std::function<void (void)> functor)
 {
-	#if BOOST_VERSION >= 106600
-	boost::asio::post(io_service,
+	if (getState() == THREAD_STATE_TERMINATED) {
+		return 0;
+	}
+
+	uint64_t eventId = ++lastEventId;
+	auto res = eventIds.emplace(std::piecewise_construct, std::forward_as_tuple(eventId), std::forward_as_tuple(io_service));
+
+	boost::asio::deadline_timer& timer = res.first->second;
+	timer.expires_from_now(boost::posix_time::milliseconds(delay));
+	#ifdef __cpp_generic_lambdas
+	timer.async_wait([this, eventId, f = std::move(functor)](const boost::system::error_code& error) {
 	#else
-	io_service.post(
+	timer.async_wait([this, eventId, functor](const boost::system::error_code& error) {
 	#endif
-	[this, task]() {
-		++dispatcherCycle;
+		eventIds.erase(eventId);
+
+		if (error == boost::asio::error::operation_aborted || getState() == THREAD_STATE_TERMINATED) {
+			return;
+		}
 
 		// execute it
-		(*task)();
-		delete task;
+		++dispatcherCycle;
+		#ifdef __cpp_generic_lambdas
+		(f)();
+		#else
+		(functor)();
+		#endif
 	});
+
+	return eventId;
+}
+
+void Dispatcher::stopEvent(uint64_t eventId)
+{
+	auto it = eventIds.find(eventId);
+	if (it != eventIds.end()) {
+		it->second.cancel();
+	}
 }
 
 void Dispatcher::shutdown()
 {
+	setState(THREAD_STATE_TERMINATED);
 	#if BOOST_VERSION >= 106600
 	boost::asio::post(io_service,
 	#else
 	io_service.post(
 	#endif
 	[this]() {
-		setState(THREAD_STATE_TERMINATED);
+		for (auto& it : eventIds) {
+			it.second.cancel();
+		}
+
 		work.reset();
 	});
 }

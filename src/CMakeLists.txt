@@ -95,7 +95,6 @@ target_sources(canary_lib
     ${CMAKE_CURRENT_LIST_DIR}/quests.cpp
     ${CMAKE_CURRENT_LIST_DIR}/raids.cpp
     ${CMAKE_CURRENT_LIST_DIR}/rsa.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/scheduler.cpp
     ${CMAKE_CURRENT_LIST_DIR}/scriptmanager.cpp
     ${CMAKE_CURRENT_LIST_DIR}/script.cpp
     ${CMAKE_CURRENT_LIST_DIR}/server.cpp

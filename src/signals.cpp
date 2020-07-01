@@ -35,10 +35,8 @@
 #include "globalevent.h"
 #include "monster.h"
 #include "events.h"
-#include "scheduler.h"
 #include "databasetasks.h"
 
-extern Scheduler g_scheduler;
 extern DatabaseTasks g_databaseTasks;
 extern Dispatcher g_dispatcher;
 
@@ -111,7 +109,6 @@ void Signals::dispatchSignalHandler(int signal)
 		case SIGBREAK: //Shuts the server down
 			g_dispatcher.addTask(sigbreakHandler);
 			// hold the thread until other threads end
-			g_scheduler.join();
 			g_databaseTasks.join();
 			g_dispatcher.join();
 			break;

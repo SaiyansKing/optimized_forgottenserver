@@ -21,7 +21,7 @@
 
 #include "outputmessage.h"
 #include "server.h"
-#include "scheduler.h"
+#include "tasks.h"
 #include "configmanager.h"
 #include "ban.h"
 
@@ -130,8 +130,8 @@ void ServicePort::onAccept(Connection_ptr connection, const boost::system::error
 		if (!pendingStart) {
 			close();
 			pendingStart = true;
-			g_scheduler.addEvent(createSchedulerTask(15000,
-			                     std::bind(&ServicePort::openAcceptor, std::weak_ptr<ServicePort>(shared_from_this()), serverPort)));
+			deadline_timer.expires_from_now(boost::posix_time::seconds(15));
+			deadline_timer.async_wait(std::bind(&ServicePort::openAcceptor, std::weak_ptr<ServicePort>(shared_from_this()), serverPort));
 		}
 	}
 }
@@ -186,8 +186,8 @@ void ServicePort::open(uint16_t port)
 		std::cout << "[ServicePort::open] Error: " << e.what() << std::endl;
 
 		pendingStart = true;
-		g_scheduler.addEvent(createSchedulerTask(15000,
-		                     std::bind(&ServicePort::openAcceptor, std::weak_ptr<ServicePort>(shared_from_this()), port)));
+		deadline_timer.expires_from_now(boost::posix_time::seconds(15));
+		deadline_timer.async_wait(std::bind(&ServicePort::openAcceptor, std::weak_ptr<ServicePort>(shared_from_this()), port));
 	}
 }
 

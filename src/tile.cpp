@@ -1087,8 +1087,9 @@ void Tile::removeThing(Thing* thing, uint32_t count)
 		items->addTopItemCount(-1);
 		onRemoveTileItem(spectators, oldStackPosVector, item);
 	} else {
-		auto it = std::find(items->getBeginDownItem(), items->getEndDownItem(), item);
-		if (it == items->getEndDownItem()) {
+		auto end = ItemVector::reverse_iterator(items->getBeginDownItem());
+		auto it = std::find(ItemVector::reverse_iterator(items->getEndDownItem()), end, item);
+		if (it == end) {
 			return;
 		}
 
@@ -1109,7 +1110,7 @@ void Tile::removeThing(Thing* thing, uint32_t count)
 			}
 
 			item->setParent(nullptr);
-			items->erase(it);
+			items->erase(std::next(it).base());
 			onRemoveTileItem(spectators, oldStackPosVector, item);
 		}
 	}
@@ -1568,31 +1569,24 @@ void Tile::resetTileFlags(const Item* item)
 		if (ground && item != ground) {
 			if (blockSolid && ground->hasProperty(CONST_PROP_BLOCKSOLID)) {
 				blockSolid = false;
-				checkLoop;
 			}
 			if (immovableBlockSolid && ground->hasProperty(CONST_PROP_IMMOVABLEBLOCKSOLID)) {
 				immovableBlockSolid = false;
-				checkLoop;
 			}
 			if (blockPath && ground->hasProperty(CONST_PROP_BLOCKPATH)) {
 				blockPath = false;
-				checkLoop;
 			}
 			if (noFieldBlockPath && ground->hasProperty(CONST_PROP_NOFIELDBLOCKPATH)) {
 				noFieldBlockPath = false;
-				checkLoop;
 			}
 			if (immovableBlockPath && ground->hasProperty(CONST_PROP_IMMOVABLEBLOCKPATH)) {
 				immovableBlockPath = false;
-				checkLoop;
 			}
 			if (immovableNoFieldBlockPath && ground->hasProperty(CONST_PROP_IMMOVABLENOFIELDBLOCKPATH)) {
 				immovableNoFieldBlockPath = false;
-				checkLoop;
 			}
 			if (blockProjectile && ground->hasProperty(CONST_PROP_BLOCKPROJECTILE)) {
 				blockProjectile = false;
-				checkLoop;
 			}
 		}
 
@@ -1703,9 +1697,30 @@ Item* Tile::getUseItem(int32_t index) const
 		return ground;
 	}
 
+	#if CLIENT_VERSION >= 1230
+	// Might be some versions before but I don't have access to them
+	// Cipsoft probably omits creatures in stackpos for some micro-optimizations to avoid unnecessary cache-misses
+	if (ground) {
+		if (index == 0) {
+			return ground;
+		}
+
+		--index;
+	}
+
+	int32_t topItemSize = items->getTopItemCount();
+	if (index < topItemSize) {
+		return (*items)[index];
+	}
+	index -= topItemSize;
+	if (index < static_cast<int32_t>(items->getDownItemCount())) {
+		return (*items)[items->size() - (index + 1)];
+	}
+	#else
 	if (Thing* thing = getThing(index)) {
 		return thing->getItem();
 	}
+	#endif
 
 	return nullptr;
 }

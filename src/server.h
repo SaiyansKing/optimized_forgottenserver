@@ -87,6 +87,7 @@ class ServicePort : public std::enable_shared_from_this<ServicePort>
 		boost::asio::io_service& io_service;
 		std::unique_ptr<boost::asio::ip::tcp::acceptor> acceptor;
 		std::vector<Service_ptr> services;
+		boost::asio::deadline_timer deadline_timer { io_service };
 
 		uint16_t serverPort = 0;
 		bool pendingStart = false;
@@ -118,7 +119,7 @@ class ServiceManager
 		std::unordered_map<uint16_t, ServicePort_ptr> acceptors;
 
 		boost::asio::io_service io_service;
-		Signals signals{io_service};
+		Signals signals { io_service };
 		boost::asio::deadline_timer death_timer { io_service };
 		bool running = false;
 };

@@ -22,7 +22,7 @@
 #include "configmanager.h"
 #include "globalevent.h"
 #include "tools.h"
-#include "scheduler.h"
+#include "tasks.h"
 #include "pugicast.h"
 
 extern ConfigManager g_config;
@@ -51,9 +51,9 @@ void GlobalEvents::clearMap(GlobalEventMap& map, bool fromLua)
 
 void GlobalEvents::clear(bool fromLua)
 {
-	g_scheduler.stopEvent(thinkEventId);
+	g_dispatcher.stopEvent(thinkEventId);
 	thinkEventId = 0;
-	g_scheduler.stopEvent(timerEventId);
+	g_dispatcher.stopEvent(timerEventId);
 	timerEventId = 0;
 
 	clearMap(thinkMap, fromLua);
@@ -80,7 +80,7 @@ bool GlobalEvents::registerEvent(Event_ptr event, const pugi::xml_node&)
 		auto result = timerMap.emplace(name, std::move(*globalEvent));
 		if (result.second) {
 			if (timerEventId == 0) {
-				timerEventId = g_scheduler.addEvent(createSchedulerTask(SCHEDULER_MINTICKS, std::bind(&GlobalEvents::timer, this)));
+				timerEventId = g_dispatcher.addEvent(SERVER_BEAT_MILISECONDS, std::bind(&GlobalEvents::timer, this));
 			}
 			return true;
 		}
@@ -93,7 +93,7 @@ bool GlobalEvents::registerEvent(Event_ptr event, const pugi::xml_node&)
 		auto result = thinkMap.emplace(name, std::move(*globalEvent));
 		if (result.second) {
 			if (thinkEventId == 0) {
-				thinkEventId = g_scheduler.addEvent(createSchedulerTask(SCHEDULER_MINTICKS, std::bind(&GlobalEvents::think, this)));
+				thinkEventId = g_dispatcher.addEvent(SERVER_BEAT_MILISECONDS, std::bind(&GlobalEvents::think, this));
 			}
 			return true;
 		}
@@ -112,7 +112,7 @@ bool GlobalEvents::registerLuaEvent(GlobalEvent* event)
 		auto result = timerMap.emplace(name, std::move(*globalEvent));
 		if (result.second) {
 			if (timerEventId == 0) {
-				timerEventId = g_scheduler.addEvent(createSchedulerTask(SCHEDULER_MINTICKS, std::bind(&GlobalEvents::timer, this)));
+				timerEventId = g_dispatcher.addEvent(SERVER_BEAT_MILISECONDS, std::bind(&GlobalEvents::timer, this));
 			}
 			return true;
 		}
@@ -125,7 +125,7 @@ bool GlobalEvents::registerLuaEvent(GlobalEvent* event)
 		auto result = thinkMap.emplace(name, std::move(*globalEvent));
 		if (result.second) {
 			if (thinkEventId == 0) {
-				thinkEventId = g_scheduler.addEvent(createSchedulerTask(SCHEDULER_MINTICKS, std::bind(&GlobalEvents::think, this)));
+				thinkEventId = g_dispatcher.addEvent(SERVER_BEAT_MILISECONDS, std::bind(&GlobalEvents::think, this));
 			}
 			return true;
 		}
@@ -176,8 +176,7 @@ void GlobalEvents::timer()
 	}
 
 	if (nextScheduledTime != std::numeric_limits<int64_t>::max()) {
-		timerEventId = g_scheduler.addEvent(createSchedulerTask(std::max<int64_t>(1000, nextScheduledTime * 1000),
-							                std::bind(&GlobalEvents::timer, this)));
+		timerEventId = g_dispatcher.addEvent(std::max<int64_t>(1000, nextScheduledTime * 1000), std::bind(&GlobalEvents::timer, this));
 	}
 }
 
@@ -210,7 +209,7 @@ void GlobalEvents::think()
 	}
 
 	if (nextScheduledTime != std::numeric_limits<int64_t>::max()) {
-		thinkEventId = g_scheduler.addEvent(createSchedulerTask(nextScheduledTime, std::bind(&GlobalEvents::think, this)));
+		thinkEventId = g_dispatcher.addEvent(nextScheduledTime, std::bind(&GlobalEvents::think, this));
 	}
 }
 
@@ -314,7 +313,7 @@ bool GlobalEvent::configureEvent(const pugi::xml_node& node)
 			return false;
 		}
 	} else if ((attr = node.attribute("interval"))) {
-		interval = std::max<int32_t>(SCHEDULER_MINTICKS, pugi::cast<int32_t>(attr.value()));
+		interval = std::max<int32_t>(SERVER_BEAT_MILISECONDS, pugi::cast<int32_t>(attr.value()));
 		nextExecution = OTSYS_TIME() + interval;
 	} else {
 		std::cout << "[Error - GlobalEvent::configureEvent] No interval for globalevent with name " << name << std::endl;

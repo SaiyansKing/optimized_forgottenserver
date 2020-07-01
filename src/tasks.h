@@ -20,29 +20,8 @@
 #ifndef FS_TASKS_H_A66AC384766041E59DCA059DAB6E1976
 #define FS_TASKS_H_A66AC384766041E59DCA059DAB6E1976
 
-#include <condition_variable>
 #include "thread_holder_base.h"
 #include "enums.h"
-
-class Task
-{
-	public:
-		// DO NOT allocate this class on the stack
-		explicit Task(std::function<void (void)>&& f) : func(std::move(f)) {}
-
-		virtual ~Task() = default;
-		void operator()() {
-			func();
-		}
-
-	private:
-		// Expiration has another meaning for scheduler tasks,
-		// then it is the time the task should be added to the
-		// dispatcher
-		std::function<void (void)> func;
-};
-
-Task* createTask(std::function<void (void)> f);
 
 class Dispatcher : public ThreadHolder<Dispatcher> {
 	public:
@@ -53,7 +32,8 @@ class Dispatcher : public ThreadHolder<Dispatcher> {
 		#endif
 
 		void addTask(std::function<void (void)> functor);
-		void addTask(Task* task);
+		uint64_t addEvent(uint32_t delay, std::function<void (void)> functor);
+		void stopEvent(uint64_t eventId);
 
 		void shutdown();
 
@@ -65,7 +45,9 @@ class Dispatcher : public ThreadHolder<Dispatcher> {
 
 	private:
 		std::thread thread;
+		uint64_t lastEventId = 0;
 		uint64_t dispatcherCycle = 0;
+		std::map<uint64_t, boost::asio::deadline_timer> eventIds;
 		boost::asio::io_service io_service;
 		#if BOOST_VERSION >= 106600
 		boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work;

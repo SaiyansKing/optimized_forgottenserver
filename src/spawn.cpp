@@ -23,7 +23,6 @@
 #include "game.h"
 #include "monster.h"
 #include "configmanager.h"
-#include "scheduler.h"
 
 #include "pugicast.h"
 
@@ -133,6 +132,9 @@ void Spawns::startup()
 
 	for (Npc* npc : npcList) {
 		g_game.placeCreature(npc, npc->getMasterPos(), false, true);
+		#if GAME_FEATURE_NEWSPEED_LAW > 0
+		npc->cacheSpeed();
+		#endif
 	}
 	npcList.clear();
 	npcList.shrink_to_fit();
@@ -170,7 +172,7 @@ bool Spawns::isInZone(const Position& centerPos, int32_t radius, const Position&
 void Spawn::startSpawnCheck()
 {
 	if (checkSpawnEvent == 0) {
-		checkSpawnEvent = g_scheduler.addEvent(createSchedulerTask(getInterval(), std::bind(&Spawn::checkSpawn, this)));
+		checkSpawnEvent = g_dispatcher.addEvent(getInterval(), std::bind(&Spawn::checkSpawn, this));
 	}
 }
 
@@ -199,6 +201,7 @@ bool Spawn::findPlayer(const Position& pos)
 bool Spawn::spawnMonster(spawnBlock_t& sb, bool startup /*= false*/)
 {
 	std::unique_ptr<Monster> monster_ptr(new Monster(sb.mType));
+	monster_ptr->setDirection(sb.direction);
 	if (startup) {
 		//No need to send out events to the surrounding since there is no one out there to listen!
 		if (!g_game.internalPlaceCreature(monster_ptr.get(), sb.pos, true)) {
@@ -211,9 +214,11 @@ bool Spawn::spawnMonster(spawnBlock_t& sb, bool startup /*= false*/)
 	}
 
 	sb.monster = monster_ptr.release();
-	sb.monster->setDirection(sb.direction);
 	sb.monster->setSpawn(this);
 	sb.monster->setMasterPos(sb.pos);
+	#if GAME_FEATURE_NEWSPEED_LAW > 0
+	sb.monster->cacheSpeed();
+	#endif
 	sb.monster->incrementReferenceCounter();
 	sb.lastSpawn = OTSYS_TIME();
 	return true;
@@ -274,7 +279,7 @@ void Spawn::checkSpawn()
 	}
 
 	if (spawnedCount < spawnMap.size()) {
-		checkSpawnEvent = g_scheduler.addEvent(createSchedulerTask(getInterval(), std::bind(&Spawn::checkSpawn, this)));
+		checkSpawnEvent = g_dispatcher.addEvent(getInterval(), std::bind(&Spawn::checkSpawn, this));
 	}
 }
 
@@ -292,7 +297,7 @@ void Spawn::scheduleSpawn(uint32_t spawnId, int32_t interval)
 		}
 	} else {
 		g_game.addMagicEffect(sb.pos, CONST_ME_TELEPORT);
-		g_scheduler.addEvent(createSchedulerTask(1500, std::bind(&Spawn::scheduleSpawn, this, spawnId, interval - 1500)));
+		g_dispatcher.addEvent(1500, std::bind(&Spawn::scheduleSpawn, this, spawnId, interval - 1500));
 	}
 }
 
@@ -324,7 +329,7 @@ void Spawn::removeMonster(Monster* monster)
 void Spawn::stopEvent()
 {
 	if (checkSpawnEvent != 0) {
-		g_scheduler.stopEvent(checkSpawnEvent);
+		g_dispatcher.stopEvent(checkSpawnEvent);
 		checkSpawnEvent = 0;
 	}
 }

@@ -818,7 +818,7 @@ bool Map::getPathMatching(const Creature& creature, const Position& targetPos, s
 	const int_fast32_t sY = std::abs(targetPos.getY() - pos.getY());
 
 	AStarNode* found = nullptr;
-	while (fpp.maxSearchDist != 0 || nodes.getClosedNodes() < 100) {
+	do {
 		AStarNode* n = nodes.getBestNode();
 		if (!n) {
 			if (found) {
@@ -916,7 +916,7 @@ bool Map::getPathMatching(const Creature& creature, const Position& targetPos, s
 			}
 		}
 		nodes.closeNode(n);
-	}
+	} while (nodes.getClosedNodes() < 100);
 	if (!found) {
 		return false;
 	}
@@ -989,7 +989,7 @@ bool Map::getPathMatchingCond(const Creature& creature, const Position& targetPo
 	const int_fast32_t sY = std::abs(targetPos.getY() - pos.getY());
 
 	AStarNode* found = nullptr;
-	while (fpp.maxSearchDist != 0 || nodes.getClosedNodes() < 100) {
+	do {
 		AStarNode* n = nodes.getBestNode();
 		if (!n) {
 			if (found) {
@@ -1094,7 +1094,7 @@ bool Map::getPathMatchingCond(const Creature& creature, const Position& targetPo
 			}
 		}
 		nodes.closeNode(n);
-	}
+	} while (fpp.maxSearchDist != 0 || nodes.getClosedNodes() < 100);
 
 	if (!found) {
 		return false;

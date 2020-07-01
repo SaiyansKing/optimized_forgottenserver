@@ -153,7 +153,7 @@ void ProtocolStatus::sendStatusString()
 	disconnect();
 }
 
-void ProtocolStatus::sendInfo(uint16_t requestedInfo, const std::string characterName)
+void ProtocolStatus::sendInfo(uint16_t requestedInfo, const std::string& characterName)
 {
 	auto output = OutputMessagePool::getOutputMessage();
 

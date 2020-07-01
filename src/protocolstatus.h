@@ -39,7 +39,7 @@ class ProtocolStatus final : public Protocol
 		void onRecvFirstMessage(NetworkMessage& msg) override;
 
 		void sendStatusString();
-		void sendInfo(uint16_t requestedInfo, const std::string characterName);
+		void sendInfo(uint16_t requestedInfo, const std::string& characterName);
 
 		static const uint64_t start;
 

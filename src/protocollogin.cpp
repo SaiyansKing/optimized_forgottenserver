@@ -43,9 +43,9 @@ void ProtocolLogin::disconnectClient(const std::string& message)
 }
 
 #if GAME_FEATURE_SESSIONKEY > 0
-void ProtocolLogin::getCharacterList(const std::string accountName, const std::string password, const std::string token)
+void ProtocolLogin::getCharacterList(const std::string& accountName, const std::string& password, const std::string& token)
 #else
-void ProtocolLogin::getCharacterList(const std::string accountName, const std::string password)
+void ProtocolLogin::getCharacterList(const std::string& accountName, const std::string& password)
 #endif
 {
 	#if !(GAME_FEATURE_LOGIN_EXTENDED > 0)
