@@ -29,11 +29,6 @@
 
 #include "pugicast.h"
 
-extern Game g_game;
-extern Spells* g_spells;
-extern Monsters g_monsters;
-extern ConfigManager g_config;
-
 spellBlock_t::~spellBlock_t()
 {
 	if (combatSpell) {
@@ -180,7 +175,7 @@ bool Monsters::deserializeSpell(const pugi::xml_node& node, spellBlock_t& sb, co
 		}
 	}
 
-	if (auto spell = g_spells->getSpellByName(name)) {
+	if (auto spell = g_spells().getSpellByName(name)) {
 		sb.spell = spell;
 		return true;
 	}
@@ -199,7 +194,7 @@ bool Monsters::deserializeSpell(const pugi::xml_node& node, spellBlock_t& sb, co
 		}
 
 		std::unique_ptr<CombatSpell> combatSpellPtr(new CombatSpell(nullptr, needTarget, needDirection));
-		if (!combatSpellPtr->loadScript("data/" + g_spells->getScriptBaseName() + "/scripts/" + scriptName)) {
+		if (!combatSpellPtr->loadScript("data/" + g_spells().getScriptBaseName() + "/scripts/" + scriptName)) {
 			return false;
 		}
 
@@ -401,7 +396,7 @@ bool Monsters::deserializeSpell(const pugi::xml_node& node, spellBlock_t& sb, co
 			}
 
 			if ((attr = node.attribute("monster"))) {
-				MonsterType* mType = g_monsters.getMonsterType(attr.as_string());
+				MonsterType* mType = g_monsters().getMonsterType(attr.as_string());
 				if (mType) {
 					ConditionOutfit* condition = static_cast<ConditionOutfit*>(Condition::createCondition(CONDITIONID_COMBAT, CONDITION_OUTFIT, duration, 0));
 					condition->setOutfit(mType->info.outfit);
@@ -576,7 +571,7 @@ bool Monsters::deserializeSpell(MonsterSpell* spell, spellBlock_t& sb, const std
 		sb.minCombatValue = value;
 	}
 
-	sb.spell = g_spells->getSpellByName(spell->name);
+	sb.spell = g_spells().getSpellByName(spell->name);
 	if (sb.spell) {
 		return true;
 	}
@@ -585,7 +580,7 @@ bool Monsters::deserializeSpell(MonsterSpell* spell, spellBlock_t& sb, const std
 
 	if (spell->isScripted) {
 		std::unique_ptr<CombatSpell> combatSpellPtr(new CombatSpell(nullptr, spell->needTarget, spell->needDirection));
-		if (!combatSpellPtr->loadScript("data/" + g_spells->getScriptBaseName() + "/scripts/" + spell->scriptName)) {
+		if (!combatSpellPtr->loadScript("data/" + g_spells().getScriptBaseName() + "/scripts/" + spell->scriptName)) {
 			std::cout << "cannot find file" << std::endl;
 			return false;
 		}

@@ -44,6 +44,12 @@ class Spells final : public BaseEvents
 		Spells(const Spells&) = delete;
 		Spells& operator=(const Spells&) = delete;
 
+		static Spells& getInstance() {
+			static Spells instance; // Guaranteed to be destroyed.
+														// Instantiated on first use.
+			return instance;
+		}
+
 		std::vector<uint16_t> getSpellsByVocation(uint16_t vocationId);
 		Spell* getSpellByName(const std::string& name);
 		RuneSpell* getRuneSpell(uint32_t id);
@@ -89,6 +95,8 @@ class Spells final : public BaseEvents
 		friend class CombatSpell;
 		LuaScriptInterface scriptInterface { "Spell Interface" };
 };
+
+constexpr auto g_spells = &Spells::getInstance;
 
 using RuneSpellFunction = std::function<bool(const RuneSpell* spell, Player* player, const Position& posTo)>;
 

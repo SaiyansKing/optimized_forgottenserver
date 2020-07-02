@@ -74,6 +74,12 @@ class TalkActions final : public BaseEvents
 		TalkActions(const TalkActions&) = delete;
 		TalkActions& operator=(const TalkActions&) = delete;
 
+		static TalkActions& getInstance() {
+			static TalkActions instance; // Guaranteed to be destroyed.
+														// Instantiated on first use.
+			return instance;
+		}
+
 		TalkActionResult_t playerSaySpell(Player* player, SpeakClasses type, const std::string& words) const;
 
 		bool registerLuaEvent(TalkAction* event);
@@ -93,5 +99,7 @@ class TalkActions final : public BaseEvents
 
 		LuaScriptInterface scriptInterface;
 };
+
+constexpr auto g_talkActions = &TalkActions::getInstance;
 
 #endif

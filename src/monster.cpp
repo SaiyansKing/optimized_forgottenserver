@@ -24,10 +24,6 @@
 #include "spells.h"
 #include "events.h"
 
-extern Game g_game;
-extern Monsters g_monsters;
-extern Events* g_events;
-
 int32_t Monster::despawnRange;
 int32_t Monster::despawnRadius;
 
@@ -35,7 +31,7 @@ uint32_t Monster::monsterAutoID = 0x40000000;
 
 Monster* Monster::createMonster(const std::string& name)
 {
-	MonsterType* mType = g_monsters.getMonsterType(name);
+	MonsterType* mType = g_monsters().getMonsterType(name);
 	if (!mType) {
 		return nullptr;
 	}
@@ -72,12 +68,12 @@ Monster::~Monster()
 
 void Monster::addList()
 {
-	g_game.addMonster(this);
+	g_game().addMonster(this);
 }
 
 void Monster::removeList()
 {
-	g_game.removeMonster(this);
+	g_game().removeMonster(this);
 }
 
 bool Monster::canSee(const Position& pos) const
@@ -262,7 +258,7 @@ void Monster::onCreatureMove(Creature* creature, const Tile* newTile, const Posi
 					Direction dir = getDirectionTo(position, followPosition);
 					const Position& checkPosition = getNextPosition(dir, position);
 
-					Tile* tile = g_game.map.getTile(checkPosition);
+					Tile* tile = g_game().map.getTile(checkPosition);
 					if (tile) {
 						Creature* topCreature = tile->getTopCreature();
 						if (topCreature && followCreature != topCreature && isOpponent(topCreature)) {
@@ -374,7 +370,7 @@ void Monster::updateTargetList()
 	}
 
 	SpectatorVector spectators;
-	g_game.map.getSpectators(spectators, position, true);
+	g_game().map.getSpectators(spectators, position, true);
 	spectators.erase(this);
 	for (Creature* spectator : spectators) {
 		if (canSee(spectator->getPosition())) {
@@ -641,7 +637,7 @@ bool Monster::selectTarget(Creature* creature)
 
 	if (isHostile() || isSummon()) {
 		if (setAttackedCreature(creature) && !isSummon()) {
-			g_dispatcher.addTask(std::bind(&Game::checkCreatureAttack, &g_game, getID()));
+			g_dispatcher().addTask(std::bind(&Game::checkCreatureAttack, &g_game(), getID()));
 		}
 	}
 	return setFollowCreature(creature);
@@ -656,7 +652,7 @@ void Monster::setIdle(bool idle)
 	isIdle = idle;
 
 	if (!isIdle) {
-		g_game.addCreatureCheck(this);
+		g_game().addCreatureCheck(this);
 	} else {
 		onIdleStatus();
 		clearTargetList();
@@ -726,7 +722,7 @@ void Monster::onThink(uint32_t interval)
 	}
 
 	if (!isInSpawnRange(position)) {
-		g_game.internalTeleport(this, masterPos);
+		g_game().internalTeleport(this, masterPos);
 	} else {
 		updateIdleStatus();
 
@@ -824,7 +820,7 @@ bool Monster::canUseAttack(const Position& pos, const Creature* target) const
 		uint32_t distance = std::max<uint32_t>(Position::getDistanceX(pos, targetPos), Position::getDistanceY(pos, targetPos));
 		for (const spellBlock_t& spellBlock : mType->info.attackSpells) {
 			if (spellBlock.range != 0 && distance <= spellBlock.range) {
-				return g_game.isSightClear(pos, targetPos, true);
+				return g_game().isSightClear(pos, targetPos, true);
 			}
 		}
 		return false;
@@ -959,12 +955,12 @@ void Monster::onThinkDefense(uint32_t interval)
 
 			Monster* summon = Monster::createMonster(summonBlock.name);
 			if (summon) {
-				if (g_game.placeCreature(summon, getPosition(), false, summonBlock.force)) {
+				if (g_game().placeCreature(summon, getPosition(), false, summonBlock.force)) {
 					summon->setDropLoot(false);
 					summon->setSkillLoss(false);
 					summon->setMaster(this);
-					g_game.addMagicEffect(getPosition(), CONST_ME_MAGIC_BLUE);
-					g_game.addMagicEffect(summon->getPosition(), CONST_ME_TELEPORT);
+					g_game().addMagicEffect(getPosition(), CONST_ME_MAGIC_BLUE);
+					g_game().addMagicEffect(summon->getPosition(), CONST_ME_TELEPORT);
 				} else {
 					delete summon;
 				}
@@ -992,9 +988,9 @@ void Monster::onThinkYell(uint32_t interval)
 			const voiceBlock_t& vb = mType->info.voiceVector[index];
 
 			if (vb.yellText) {
-				g_game.internalCreatureSay(this, TALKTYPE_MONSTER_YELL, vb.text, false);
+				g_game().internalCreatureSay(this, TALKTYPE_MONSTER_YELL, vb.text, false);
 			} else {
-				g_game.internalCreatureSay(this, TALKTYPE_MONSTER_SAY, vb.text, false);
+				g_game().internalCreatureSay(this, TALKTYPE_MONSTER_SAY, vb.text, false);
 			}
 		}
 	}
@@ -1019,9 +1015,9 @@ bool Monster::pushItem(Item* item)
 
 	for (const auto& it : relList) {
 		Position tryPos(centerPos.x + it.first, centerPos.y + it.second, centerPos.z);
-		Tile* tile = g_game.map.getTile(tryPos);
-		if (tile && g_game.canThrowObjectTo(centerPos, tryPos)) {
-			if (g_game.internalMoveItem(item->getParent(), tile, INDEX_WHEREEVER, item, item->getItemCount(), nullptr) == RETURNVALUE_NOERROR) {
+		Tile* tile = g_game().map.getTile(tryPos);
+		if (tile && g_game().canThrowObjectTo(centerPos, tryPos)) {
+			if (g_game().internalMoveItem(item->getParent(), tile, INDEX_WHEREEVER, item, item->getItemCount(), nullptr) == RETURNVALUE_NOERROR) {
 				return true;
 			}
 		}
@@ -1046,14 +1042,14 @@ void Monster::pushItems(Tile* tile)
 			        || item->hasProperty(CONST_PROP_BLOCKSOLID))) {
 				if (moveCount < 20 && Monster::pushItem(item)) {
 					++moveCount;
-				} else if (g_game.internalRemoveItem(item) == RETURNVALUE_NOERROR) {
+				} else if (g_game().internalRemoveItem(item) == RETURNVALUE_NOERROR) {
 					++removeCount;
 				}
 			}
 		}
 
 		if (removeCount > 0) {
-			g_game.addMagicEffect(tile->getPosition(), CONST_ME_POFF);
+			g_game().addMagicEffect(tile->getPosition(), CONST_ME_POFF);
 		}
 	}
 }
@@ -1069,9 +1065,9 @@ bool Monster::pushCreature(Creature* creature)
 
 	for (Direction dir : dirList) {
 		const Position& tryPos = Spells::getCasterPosition(creature, dir);
-		Tile* toTile = g_game.map.getTile(tryPos);
+		Tile* toTile = g_game().map.getTile(tryPos);
 		if (toTile && !toTile->hasFlag(TILESTATE_BLOCKPATH)) {
-			if (g_game.internalMoveCreature(creature, dir) == RETURNVALUE_NOERROR) {
+			if (g_game().internalMoveCreature(creature, dir) == RETURNVALUE_NOERROR) {
 				return true;
 			}
 		}
@@ -1104,7 +1100,7 @@ void Monster::pushCreatures(Tile* tile)
 		}
 
 		if (removeCount > 0) {
-			g_game.addMagicEffect(tile->getPosition(), CONST_ME_BLOCKHIT);
+			g_game().addMagicEffect(tile->getPosition(), CONST_ME_BLOCKHIT);
 		}
 	}
 }
@@ -1147,7 +1143,7 @@ bool Monster::getNextStep(Direction& direction, uint32_t& flags)
 
 	if (result && (canPushItems() || canPushCreatures())) {
 		const Position& pos = Spells::getCasterPosition(this, direction);
-		Tile* tile = g_game.map.getTile(pos);
+		Tile* tile = g_game().map.getTile(pos);
 		if (tile) {
 			if (canPushItems()) {
 				Monster::pushItems(tile);
@@ -1275,7 +1271,7 @@ bool Monster::getDistanceStep(const Position& targetPos, Direction& direction, b
 
 	int32_t distance = std::max<int32_t>(dx, dy);
 
-	if (!flee && (distance > mType->info.targetDistance || !g_game.isSightClear(creaturePos, targetPos, true))) {
+	if (!flee && (distance > mType->info.targetDistance || !g_game().isSightClear(creaturePos, targetPos, true))) {
 		return false; // let the A* calculate it
 	} else if (!flee && distance == mType->info.targetDistance) {
 		return true; // we don't really care here, since it's what we wanted to reach (a dancestep will take of dancing in that position)
@@ -1769,7 +1765,7 @@ bool Monster::canWalkTo(Position pos, Direction direction) const
 			return false;
 		}
 
-		Tile* tile = g_game.map.getTile(pos);
+		Tile* tile = g_game().map.getTile(pos);
 		if (tile && tile->getTopVisibleCreature(this) == nullptr && tile->queryAdd(0, *this, 1, FLAG_PATHFINDING) == RETURNVALUE_NOERROR) {
 			return true;
 		}
@@ -1910,13 +1906,13 @@ void Monster::updateLookDirection()
 		}
 	}
 
-	g_game.internalCreatureTurn(this, newDir);
+	g_game().internalCreatureTurn(this, newDir);
 }
 
 void Monster::dropLoot(Container* corpse, Creature*)
 {
 	if (corpse && lootDrop) {
-		g_events->eventMonsterOnDropLoot(this, corpse);
+		g_events().eventMonsterOnDropLoot(this, corpse);
 	}
 }
 

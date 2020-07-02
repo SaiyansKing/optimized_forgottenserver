@@ -23,8 +23,6 @@
 #include "game.h"
 #include "iologindata.h"
 
-extern Game g_game;
-
 ReturnValue Mailbox::queryAdd(int32_t, const Thing& thing, uint32_t, uint32_t, Creature*) const
 {
 	const Item* item = thing.getItem();
@@ -107,11 +105,11 @@ bool Mailbox::sendItem(Item* item) const
 	}
 	#endif
 
-	Player* player = g_game.getPlayerByName(receiver);
+	Player* player = g_game().getPlayerByName(receiver);
 	if (player) {
 		#if GAME_FEATURE_MARKET > 0
-		if (g_game.internalMoveItem(item->getParent(), player->getInbox(), INDEX_WHEREEVER, item, item->getItemCount(), nullptr, FLAG_NOLIMIT) == RETURNVALUE_NOERROR) {
-			g_game.transformItem(item, item->getID() + 1);
+		if (g_game().internalMoveItem(item->getParent(), player->getInbox(), INDEX_WHEREEVER, item, item->getItemCount(), nullptr, FLAG_NOLIMIT) == RETURNVALUE_NOERROR) {
+			g_game().transformItem(item, item->getID() + 1);
 			player->onReceiveMail();
 			return true;
 		}
@@ -119,8 +117,8 @@ bool Mailbox::sendItem(Item* item) const
 		DepotLocker* depotLocker = player->getDepotLocker(depotId);
 		player->setLastDepotId(static_cast<int16_t>(depotId));
 		if (depotLocker) {
-			if (g_game.internalMoveItem(item->getParent(), depotLocker, INDEX_WHEREEVER, item, item->getItemCount(), nullptr, FLAG_NOLIMIT) == RETURNVALUE_NOERROR) {
-				g_game.transformItem(item, item->getID() + 1);
+			if (g_game().internalMoveItem(item->getParent(), depotLocker, INDEX_WHEREEVER, item, item->getItemCount(), nullptr, FLAG_NOLIMIT) == RETURNVALUE_NOERROR) {
+				g_game().transformItem(item, item->getID() + 1);
 				player->onReceiveMail();
 				return true;
 			}
@@ -133,8 +131,8 @@ bool Mailbox::sendItem(Item* item) const
 		}
 
 		#if GAME_FEATURE_MARKET > 0
-		if (g_game.internalMoveItem(item->getParent(), tmpPlayer.getInbox(), INDEX_WHEREEVER, item, item->getItemCount(), nullptr, FLAG_NOLIMIT) == RETURNVALUE_NOERROR) {
-			g_game.transformItem(item, item->getID() + 1);
+		if (g_game().internalMoveItem(item->getParent(), tmpPlayer.getInbox(), INDEX_WHEREEVER, item, item->getItemCount(), nullptr, FLAG_NOLIMIT) == RETURNVALUE_NOERROR) {
+			g_game().transformItem(item, item->getID() + 1);
 			IOLoginData::savePlayer(&tmpPlayer);
 			return true;
 		}
@@ -142,8 +140,8 @@ bool Mailbox::sendItem(Item* item) const
 		DepotLocker* depotLocker = tmpPlayer.getDepotLocker(depotId);
 		tmpPlayer.setLastDepotId(static_cast<int16_t>(depotId));
 		if (depotLocker) {
-			if (g_game.internalMoveItem(item->getParent(), depotLocker, INDEX_WHEREEVER, item, item->getItemCount(), nullptr, FLAG_NOLIMIT) == RETURNVALUE_NOERROR) {
-				g_game.transformItem(item, item->getID() + 1);
+			if (g_game().internalMoveItem(item->getParent(), depotLocker, INDEX_WHEREEVER, item, item->getItemCount(), nullptr, FLAG_NOLIMIT) == RETURNVALUE_NOERROR) {
+				g_game().transformItem(item, item->getID() + 1);
 				IOLoginData::savePlayer(&tmpPlayer);
 				return true;
 			}
@@ -181,7 +179,7 @@ bool Mailbox::getReceiver(Item* item, std::string& name, uint32_t& depotId) cons
 	(void)townName;
 	return true;
 	#else
-	Town* town = g_game.map.towns.getTown(townName);
+	Town* town = g_game().map.towns.getTown(townName);
 	if (town) {
 		depotId = town->getID();
 		return true;

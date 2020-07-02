@@ -21,23 +21,25 @@
 
 #include "decay.h"
 #include "game.h"
-
-extern Game g_game;
-Decay g_decay;
+#include "tasks.h"
 
 void Decay::startDecay(Item* item, int32_t duration)
 {
+	if (!item) {
+		return;
+	}
+
 	if (item->hasAttribute(ITEM_ATTRIBUTE_DURATION_TIMESTAMP)) {
 		stopDecay(item, item->getIntAttr(ITEM_ATTRIBUTE_DURATION_TIMESTAMP));
 	}
 
 	int64_t timestamp = OTSYS_TIME() + static_cast<int64_t>(duration);
 	if (decayMap.empty()) {
-		eventId = g_dispatcher.addEvent(std::max<int32_t>(SERVER_BEAT_MILISECONDS, duration), std::bind(&Decay::checkDecay, this));
+		eventId = g_dispatcher().addEvent(std::max<int32_t>(SERVER_BEAT_MILISECONDS, duration), std::bind(&Decay::checkDecay, this));
 	} else {
 		if (timestamp < decayMap.begin()->first) {
-			g_dispatcher.stopEvent(eventId);
-			eventId = g_dispatcher.addEvent(std::max<int32_t>(SERVER_BEAT_MILISECONDS, duration), std::bind(&Decay::checkDecay, this));
+			g_dispatcher().stopEvent(eventId);
+			eventId = g_dispatcher().addEvent(std::max<int32_t>(SERVER_BEAT_MILISECONDS, duration), std::bind(&Decay::checkDecay, this));
 		}
 	}
 
@@ -49,6 +51,10 @@ void Decay::startDecay(Item* item, int32_t duration)
 
 void Decay::stopDecay(Item* item, int64_t timestamp)
 {
+	if (!item) {
+		return;
+	}
+	
 	auto it = decayMap.find(timestamp);
 	if (it != decayMap.end()) {
 		std::vector<Item*>& decayItems = it->second;
@@ -61,7 +67,7 @@ void Decay::stopDecay(Item* item, int64_t timestamp)
 					item->setDuration(item->getDuration());
 				}
 				item->removeAttribute(ITEM_ATTRIBUTE_DECAYSTATE);
-				g_game.ReleaseItem(item);
+				g_game().ReleaseItem(item);
 
 				decayMap.erase(it);
 			}
@@ -74,7 +80,7 @@ void Decay::stopDecay(Item* item, int64_t timestamp)
 					item->setDuration(item->getDuration());
 				}
 				item->removeAttribute(ITEM_ATTRIBUTE_DECAYSTATE);
-				g_game.ReleaseItem(item);
+				g_game().ReleaseItem(item);
 
 				std::swap(decayItems[i], decayItems.back());
 				decayItems.pop_back();
@@ -110,13 +116,13 @@ void Decay::checkDecay()
 			item->setDecaying(DECAYING_FALSE);
 		} else {
 			item->setDecaying(DECAYING_FALSE);
-			g_game.internalDecayItem(item);
+			g_game().internalDecayItem(item);
 		}
 
-		g_game.ReleaseItem(item);
+		g_game().ReleaseItem(item);
 	}
 
 	if (it != end) {
-		eventId = g_dispatcher.addEvent(std::max<int32_t>(SERVER_BEAT_MILISECONDS, static_cast<int32_t>(it->first - timestamp)), std::bind(&Decay::checkDecay, this));
+		eventId = g_dispatcher().addEvent(std::max<int32_t>(SERVER_BEAT_MILISECONDS, static_cast<int32_t>(it->first - timestamp)), std::bind(&Decay::checkDecay, this));
 	}
 }

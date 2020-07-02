@@ -82,7 +82,6 @@ target_sources(canary_lib
     ${CMAKE_CURRENT_LIST_DIR}/movement.cpp
     ${CMAKE_CURRENT_LIST_DIR}/networkmessage.cpp
     ${CMAKE_CURRENT_LIST_DIR}/npc.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/otserv.cpp
     ${CMAKE_CURRENT_LIST_DIR}/outfit.cpp
     ${CMAKE_CURRENT_LIST_DIR}/outputmessage.cpp
     ${CMAKE_CURRENT_LIST_DIR}/party.cpp
@@ -95,8 +94,7 @@ target_sources(canary_lib
     ${CMAKE_CURRENT_LIST_DIR}/quests.cpp
     ${CMAKE_CURRENT_LIST_DIR}/raids.cpp
     ${CMAKE_CURRENT_LIST_DIR}/rsa.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/scriptmanager.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/script.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/scripts.cpp
     ${CMAKE_CURRENT_LIST_DIR}/server.cpp
     ${CMAKE_CURRENT_LIST_DIR}/signals.cpp
     ${CMAKE_CURRENT_LIST_DIR}/spawn.cpp

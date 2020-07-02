@@ -25,9 +25,6 @@
 #include "outputmessage.h"
 #include "rsa.h"
 
-extern RSA g_RSA;
-extern ConfigManager g_config;
-
 Protocol::~Protocol()
 {
 	if (compreesionEnabled) {
@@ -113,7 +110,7 @@ bool Protocol::onRecvMessage(NetworkMessage& msg)
 			}
 		}
 	};
-	g_dispatcher.addTask(callback);
+	g_dispatcher().addTask(callback);
 	return true;
 }
 
@@ -496,7 +493,7 @@ bool Protocol::RSA_decrypt(NetworkMessage& msg)
 		return false;
 	}
 
-	g_RSA.decrypt(reinterpret_cast<char*>(msg.getBuffer()) + msg.getBufferPosition()); //does not break strict aliasing
+	g_RSA().decrypt(reinterpret_cast<char*>(msg.getBuffer()) + msg.getBufferPosition()); //does not break strict aliasing
 	return (msg.getByte() == 0);
 }
 
@@ -513,7 +510,7 @@ void Protocol::enableCompression()
 {
 	if(!compreesionEnabled)
 	{
-		int32_t compressionLevel = g_config.getNumber(ConfigManager::COMPRESSION_LEVEL);
+		int32_t compressionLevel = g_config().getNumber(ConfigManager::COMPRESSION_LEVEL);
 		if (compressionLevel != 0) {
 			defStream.reset(new z_stream);
 			defStream->zalloc = Z_NULL;

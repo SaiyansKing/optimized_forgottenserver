@@ -48,6 +48,12 @@ class Database
 		Database(const Database&) = delete;
 		Database& operator=(const Database&) = delete;
 
+		static Database& getInstance() {
+			static Database instance; // Guaranteed to be destroyed.
+														// Instantiated on first use.
+			return instance;
+		}
+
 		/**
 		 * Inits MySQL Client library
 		 *
@@ -263,6 +269,6 @@ class DBTransaction
 };
 
 //g_database should be used only in dispatcher thread
-extern Database g_database;
+constexpr auto g_database = &Database::getInstance;
 
 #endif

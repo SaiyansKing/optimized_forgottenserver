@@ -29,6 +29,16 @@ class Modules
 	public:
 		Modules();
 
+		// Singleton - ensures we don't accidentally copy it
+		Modules(Modules const&) = delete;
+		void operator=(Modules const&) = delete;
+
+		static Modules& getInstance() {
+			static Modules instance; // Guaranteed to be destroyed.
+														// Instantiated on first use.
+			return instance;
+		}
+
 		bool load();
 		
 		// Module
@@ -38,5 +48,7 @@ class Modules
 		LuaScriptInterface scriptInterface;
 		std::map<uint8_t, int32_t> modules;
 };
+
+constexpr auto g_modules = &Modules::getInstance;
 
 #endif

@@ -22,8 +22,6 @@
 #include "databasetasks.h"
 #include "tasks.h"
 
-extern Dispatcher g_dispatcher;
-
 void DatabaseTasks::threadMain()
 {
 	std::unique_lock<std::mutex> taskLockUnique(taskLock, std::defer_lock);
@@ -79,7 +77,7 @@ void DatabaseTasks::runTask(const DatabaseTask& task)
 	}
 
 	if (task.callback) {
-		g_dispatcher.addTask(std::bind(task.callback, result, success));
+		g_dispatcher().addTask(std::bind(task.callback, result, success));
 	}
 }
 

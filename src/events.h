@@ -64,6 +64,16 @@ class Events
 
 	public:
 		Events();
+		
+		// Singleton - ensures we don't accidentally copy it
+		Events(Events const&) = delete;
+		void operator=(Events const&) = delete;
+
+		static Events& getInstance() {
+			static Events instance; // Guaranteed to be destroyed.
+														// Instantiated on first use.
+			return instance;
+		}
 
 		bool load();
 
@@ -103,5 +113,7 @@ class Events
 		LuaScriptInterface scriptInterface;
 		EventsInfo info;
 };
+
+constexpr auto g_events = &Events::getInstance;
 
 #endif

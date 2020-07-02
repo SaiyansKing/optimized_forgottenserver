@@ -108,12 +108,12 @@ bool IOMap::loadMap(Map* map, const std::string& fileName)
 	}
 
 	if (root_header.minorVersionItems > Item::items.minorVersion) {
-		std::cout << "[Warning - IOMap::loadMap] This map needs an updated items.otb." << std::endl;
+		spdlog::warn("[IOMap::loadMap] This map needs an updated items.otb.");
 	}
-
-	std::cout << "> Map size: " << root_header.width << "x" << root_header.height << '.' << std::endl;
 	map->width = root_header.width;
 	map->height = root_header.height;
+	
+	spdlog::info("Map size: {} x {}.", map->width, map->height);
 
 	if (root.children.size() != 1 || root.children[0].type != OTBM_MAP_DATA) {
 		setLastErrorString("Could not read data node.");
@@ -144,7 +144,7 @@ bool IOMap::loadMap(Map* map, const std::string& fileName)
 		}
 	}
 
-	std::cout << "> Map loading time: " << (OTSYS_TIME() - start) / (1000.) << " seconds." << std::endl;
+	spdlog::info("Map loading time: {} seconds.", (OTSYS_TIME() - start) / (1000.));
 	return true;
 }
 
@@ -300,7 +300,14 @@ bool IOMap::parseTileArea(OTB::Loader& loader, const OTB::Node& tileAreaNode, Ma
 					}
 
 					if (isHouseTile && item->isMoveable()) {
-						std::cout << "[Warning - IOMap::loadMap] Moveable item with ID: " << item->getID() << ", in house: " << house->getId() << ", at position [x: " << x << ", y: " << y << ", z: " << z << "]." << std::endl;
+						spdlog::warn(
+							"[IOMap::loadMap] Moveable item with ID: {} in house: {}, at position [x: {}, y: {}, z: {}].",
+							item->getID(),
+							house->getId(),
+							x,
+							y,
+							z
+						);
 						delete item;
 					} else {
 						if (item->getItemCount() == 0) {
@@ -363,7 +370,14 @@ bool IOMap::parseTileArea(OTB::Loader& loader, const OTB::Node& tileAreaNode, Ma
 			}
 
 			if (isHouseTile && item->isMoveable()) {
-				std::cout << "[Warning - IOMap::loadMap] Moveable item with ID: " << item->getID() << ", in house: " << house->getId() << ", at position [x: " << x << ", y: " << y << ", z: " << z << "]." << std::endl;
+				spdlog::warn(
+					"[IOMap::loadMap] Moveable item with ID: {} in house: {}, at position [x: {}, y: {}, z: {}].",
+					item->getID(),
+					house->getId(),
+					x,
+					y,
+					z
+				);
 				delete item;
 			} else {
 				if (item->getItemCount() == 0) {

@@ -225,9 +225,16 @@ class Monsters
 {
 	public:
 		Monsters() = default;
+
 		// non-copyable
 		Monsters(const Monsters&) = delete;
 		Monsters& operator=(const Monsters&) = delete;
+
+		static Monsters& getInstance() {
+			static Monsters instance; // Guaranteed to be destroyed.
+														// Instantiated on first use.
+			return instance;
+		}
 
 		bool loadRaces();
 		bool loadFromXml(bool reloading = false);
@@ -264,5 +271,7 @@ class Monsters
 
 		bool loaded = false;
 };
+
+constexpr auto g_monsters = &Monsters::getInstance;
 
 #endif

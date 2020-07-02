@@ -22,12 +22,10 @@
 #include "tasks.h"
 #include "game.h"
 
-extern Game g_game;
-
 void Dispatcher::threadMain()
 {
 	io_service.run();
-	g_database.disconnect();
+	g_database().disconnect();
 }
 
 void Dispatcher::addTask(std::function<void (void)> functor)

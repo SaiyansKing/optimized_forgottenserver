@@ -23,6 +23,16 @@
 class ConfigManager
 {
 	public:
+		// Singleton - ensures we don't accidentally copy it
+		ConfigManager(ConfigManager const&) = delete;
+		void operator=(ConfigManager const&) = delete;
+
+		static ConfigManager& getInstance() {
+			static ConfigManager instance; // Guaranteed to be destroyed.
+														// Instantiated on first use.
+			return instance;
+		}
+
 		enum boolean_config_t {
 			ALLOW_CHANGEOUTFIT,
 			ONE_PLAYER_ON_ACCOUNT,
@@ -125,12 +135,20 @@ class ConfigManager
 		int32_t getNumber(integer_config_t what) const;
 		bool getBoolean(boolean_config_t what) const;
 
+		void setString(string_config_t what, std::string& value);
+		void setNumber(integer_config_t what, int32_t value);
+		void setBoolean(boolean_config_t what, bool value);
+
 	private:
+		ConfigManager() {}
+
 		std::string string[LAST_STRING_CONFIG] = {};
 		int32_t integer[LAST_INTEGER_CONFIG] = {};
 		bool boolean[LAST_BOOLEAN_CONFIG] = {};
 
 		bool loaded = false;
 };
+
+constexpr auto g_config = &ConfigManager::getInstance;
 
 #endif

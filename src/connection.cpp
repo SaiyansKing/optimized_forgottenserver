@@ -28,8 +28,6 @@
 #include "tasks.h"
 #include "server.h"
 
-extern ConfigManager g_config;
-
 Connection_ptr ConnectionManager::createConnection(boost::asio::io_service& io_service, ConstServicePort_ptr servicePort)
 {
 	std::lock_guard<std::mutex> lockClass(connectionManagerLock);
@@ -75,7 +73,7 @@ void Connection::close(bool force)
 	connectionState = CONNECTION_STATE_CLOSED;
 
 	if (protocol) {
-		g_dispatcher.addTask(std::bind(&Protocol::release, protocol));
+		g_dispatcher().addTask(std::bind(&Protocol::release, protocol));
 	}
 
 	if (messageQueue.empty() || force) {
@@ -109,7 +107,7 @@ void Connection::accept(Protocol_ptr protocol)
 {
 	this->connectionState = CONNECTION_STATE_IDENTIFYING;
 	this->protocol = protocol;
-	g_dispatcher.addTask(std::bind(&Protocol::onConnect, protocol));
+	g_dispatcher().addTask(std::bind(&Protocol::onConnect, protocol));
 
 	std::lock_guard<std::recursive_mutex> lockClass(connectionLock);
 	try {
@@ -157,7 +155,7 @@ void Connection::parseProxyIdentification(const boost::system::error_code& error
 	}
 
 	uint8_t* msgBuffer = msg.getBuffer();
-	std::string serverName = g_config.getString(ConfigManager::SERVER_NAME) + "\n";
+	std::string serverName = g_config().getString(ConfigManager::SERVER_NAME) + "\n";
 	if (connectionState == CONNECTION_STATE_IDENTIFYING) {
 		if (msgBuffer[1] == 0x00 || strncasecmp(reinterpret_cast<char*>(msgBuffer), &serverName[0], 2) != 0) {
 			//Probably not proxy identification so let's try standard parsing method
@@ -223,7 +221,7 @@ void Connection::parseHeader(const boost::system::error_code& error)
 	}
 
 	uint32_t timePassed = std::max<uint32_t>(1, (time(nullptr) - timeConnected) + 1);
-	if ((++packetsSent / timePassed) > static_cast<uint32_t>(g_config.getNumber(ConfigManager::MAX_PACKETS_PER_SECOND))) {
+	if ((++packetsSent / timePassed) > static_cast<uint32_t>(g_config().getNumber(ConfigManager::MAX_PACKETS_PER_SECOND))) {
 		std::cout << convertIPToString(getIP()) << " disconnected for exceeding packet per second limit." << std::endl;
 		close();
 		return;

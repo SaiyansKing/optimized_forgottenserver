@@ -33,9 +33,6 @@ namespace fs = std::filesystem;
 namespace fs = boost::filesystem;
 #endif
 
-extern MoveEvents* g_moveEvents;
-extern Weapons* g_weapons;
-
 const std::unordered_map<std::string, ItemParseAttributes_t> ItemParseAttributesMap = {
 	{"type", ITEM_PARSE_TYPE},
 	{"description", ITEM_PARSE_DESCRIPTION},
@@ -180,9 +177,9 @@ bool Items::reload()
 		return false;
 	}
 
-	g_moveEvents->reload();
-	g_weapons->reload();
-	g_weapons->loadDefaults();
+	g_moveEvents().reload();
+	g_weapons().reload();
+	g_weapons().loadDefaults();
 	return true;
 }
 

@@ -159,6 +159,14 @@ Vocation* Vocations::getVocation(uint16_t id)
 	return &it->second;
 }
 
+void Vocations::addVocation(Vocation voc) {
+	if (voc.getId() <= 0) {
+		spdlog::warn("[Vocations::addVocation] Cannot add invalid vocation.");
+		return;
+	}
+	vocationsMap.emplace(voc.getId(), voc);
+}
+
 int32_t Vocations::getVocationId(const std::string& name) const
 {
 	for (const auto& it : vocationsMap) {

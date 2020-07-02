@@ -25,9 +25,6 @@
 
 #include <tuple>
 
-extern ConfigManager g_config;
-extern Game g_game;
-
 namespace {
 
 struct Wait
@@ -115,15 +112,15 @@ bool WaitingList::clientLogin(const Player* player, std::size_t& currentSlot)
 	cleanupList(info->priorityWaitList);
 	cleanupList(info->waitList);
 
-	uint32_t maxPlayers = static_cast<uint32_t>(g_config.getNumber(ConfigManager::MAX_PLAYERS));
-	if (maxPlayers == 0 || (info->priorityWaitList.empty() && info->waitList.empty() && g_game.getPlayersOnline() < maxPlayers)) {
+	uint32_t maxPlayers = static_cast<uint32_t>(g_config().getNumber(ConfigManager::MAX_PLAYERS));
+	if (maxPlayers == 0 || (info->priorityWaitList.empty() && info->waitList.empty() && g_game().getPlayersOnline() < maxPlayers)) {
 		return true;
 	}
 
 	auto result = info->findClient(player);
 	if (std::get<1>(result) != std::get<0>(result).end()) {
 		currentSlot = std::get<2>(result);
-		if ((g_game.getPlayersOnline() + currentSlot) <= maxPlayers) {
+		if ((g_game().getPlayersOnline() + currentSlot) <= maxPlayers) {
 			//should be able to login now
 			std::get<0>(result).erase(std::get<1>(result));
 			return true;

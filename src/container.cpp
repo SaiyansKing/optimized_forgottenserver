@@ -23,8 +23,6 @@
 #include "iomap.h"
 #include "game.h"
 
-extern Game g_game;
-
 Container::Container(uint16_t type) :
 	Container(type, items[type].maxItems) {}
 
@@ -56,7 +54,7 @@ Container::~Container()
 {
 	#if GAME_FEATURE_BROWSEFIELD > 0
 	if (getID() == ITEM_BROWSEFIELD) {
-		g_game.browseFields.erase(getTile());
+		g_game().browseFields.erase(getTile());
 		for (Item* item : itemlist) {
 			item->setParent(parent);
 		}
@@ -230,7 +228,7 @@ bool Container::isHoldingItem(const Item* item) const
 void Container::onAddContainerItem(Item* item)
 {
 	SpectatorVector spectators;
-	g_game.map.getSpectators(spectators, getPosition(), false, true, 2, 2, 2, 2);
+	g_game().map.getSpectators(spectators, getPosition(), false, true, 2, 2, 2, 2);
 
 	//send to client
 	for (Creature* spectator : spectators) {
@@ -246,7 +244,7 @@ void Container::onAddContainerItem(Item* item)
 void Container::onUpdateContainerItem(uint32_t index, Item* oldItem, Item* newItem)
 {
 	SpectatorVector spectators;
-	g_game.map.getSpectators(spectators, getPosition(), false, true, 2, 2, 2, 2);
+	g_game().map.getSpectators(spectators, getPosition(), false, true, 2, 2, 2, 2);
 
 	//send to client
 	for (Creature* spectator : spectators) {
@@ -262,7 +260,7 @@ void Container::onUpdateContainerItem(uint32_t index, Item* oldItem, Item* newIt
 void Container::onRemoveContainerItem(uint32_t index, Item* item)
 {
 	SpectatorVector spectators;
-	g_game.map.getSpectators(spectators, getPosition(), false, true, 2, 2, 2, 2);
+	g_game().map.getSpectators(spectators, getPosition(), false, true, 2, 2, 2, 2);
 
 	//send change to client
 	for (Creature* spectator : spectators) {
@@ -703,17 +701,17 @@ void Container::internalAddThing(uint32_t, Thing* thing)
 
 void Container::startDecaying()
 {
-	g_game.startDecay(this);
+	g_game().startDecay(this);
 	for (ContainerIterator it = iterator(); it.hasNext(); it.advance()) {
-		g_game.startDecay(*it);
+		g_game().startDecay(*it);
 	}
 }
 
 void Container::stopDecaying()
 {
-	g_game.stopDecay(this);
+	g_game().stopDecay(this);
 	for (ContainerIterator it = iterator(); it.hasNext(); it.advance()) {
-		g_game.stopDecay(*it);
+		g_game().stopDecay(*it);
 	}
 }
 

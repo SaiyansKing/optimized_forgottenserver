@@ -46,6 +46,12 @@ class GlobalEvents final : public BaseEvents
 		GlobalEvents(const GlobalEvents&) = delete;
 		GlobalEvents& operator=(const GlobalEvents&) = delete;
 
+		static GlobalEvents& getInstance() {
+			static GlobalEvents instance; // Guaranteed to be destroyed.
+														// Instantiated on first use.
+			return instance;
+		}
+
 		void startup() const;
 
 		void timer();
@@ -122,5 +128,7 @@ class GlobalEvent final : public Event
 		int64_t nextExecution = 0;
 		uint32_t interval = 0;
 };
+
+constexpr auto g_globalEvents = &GlobalEvents::getInstance;
 
 #endif

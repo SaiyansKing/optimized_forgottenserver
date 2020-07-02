@@ -128,6 +128,12 @@ class Chat
 		Chat(const Chat&) = delete;
 		Chat& operator=(const Chat&) = delete;
 
+		static Chat& getInstance() {
+			static Chat instance; // Guaranteed to be destroyed.
+														// Instantiated on first use.
+			return instance;
+		}
+
 		bool load();
 
 		ChatChannel* createChannel(const Player& player, uint16_t channelId);
@@ -161,5 +167,7 @@ class Chat
 
 		PrivateChatChannel dummyPrivate;
 };
+
+constexpr auto g_chat = &Chat::getInstance;
 
 #endif

@@ -22,6 +22,7 @@
 
 #include "account.h"
 #include "combat.h"
+#include "decay.h"
 #include "groups.h"
 #include "map.h"
 #include "position.h"
@@ -86,6 +87,12 @@ class Game
 		// non-copyable
 		Game(const Game&) = delete;
 		Game& operator=(const Game&) = delete;
+
+		static Game& getInstance() {
+			static Game instance; // Guaranteed to be destroyed.
+														// Instantiated on first use.
+			return instance;
+		}
 
 		void start(ServiceManager* manager);
 
@@ -593,5 +600,7 @@ class Game
 		bool stagesEnabled = false;
 		bool useLastStageLevel = false;
 };
+
+constexpr auto g_game = &Game::getInstance;
 
 #endif

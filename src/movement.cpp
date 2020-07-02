@@ -25,9 +25,6 @@
 
 #include "movement.h"
 
-extern Game g_game;
-extern Vocations g_vocations;
-
 MoveEvents::MoveEvents() :
 	scriptInterface("MoveEvents Interface")
 {
@@ -533,7 +530,7 @@ bool MoveEvent::configureEvent(const pugi::xml_node& node)
 				continue;
 			}
 
-			int32_t vocationId = g_vocations.getVocationId(vocationNameAttribute.as_string());
+			int32_t vocationId = g_vocations().getVocationId(vocationNameAttribute.as_string());
 			if (vocationId != -1) {
 				vocEquipMap[vocationId] = true;
 				if (vocationNode.attribute("showInDescription").as_bool(true)) {
@@ -625,7 +622,7 @@ uint32_t MoveEvent::EquipItem(MoveEvent* moveEvent, Player* player, Item* item, 
 
 	const ItemType& it = Item::items[item->getID()];
 	if (it.transformEquipTo != 0) {
-		g_game.transformItem(item, it.transformEquipTo);
+		g_game().transformItem(item, it.transformEquipTo);
 	} else {
 		player->setItemAbility(slot, true);
 	}
@@ -645,7 +642,7 @@ uint32_t MoveEvent::EquipItem(MoveEvent* moveEvent, Player* player, Item* item, 
 	}
 
 	if (it.abilities->speed != 0) {
-		g_game.changeSpeed(player, it.abilities->speed);
+		g_game().changeSpeed(player, it.abilities->speed);
 	}
 
 	if (it.abilities->conditionSuppressions != 0) {
@@ -728,7 +725,7 @@ uint32_t MoveEvent::DeEquipItem(MoveEvent*, Player* player, Item* item, slots_t 
 
 	const ItemType& it = Item::items[item->getID()];
 	if (it.transformDeEquipTo != 0) {
-		g_game.transformItem(item, it.transformDeEquipTo);
+		g_game().transformItem(item, it.transformDeEquipTo);
 	}
 
 	if (!it.abilities) {
@@ -744,7 +741,7 @@ uint32_t MoveEvent::DeEquipItem(MoveEvent*, Player* player, Item* item, slots_t 
 	}
 
 	if (it.abilities->speed != 0) {
-		g_game.changeSpeed(player, -it.abilities->speed);
+		g_game().changeSpeed(player, -it.abilities->speed);
 	}
 
 	if (it.abilities->conditionSuppressions != 0) {

@@ -104,6 +104,7 @@ class NpcEventsHandler
 class Npc final : public Creature
 {
 	public:
+		explicit Npc();
 		~Npc();
 
 		// non-copyable

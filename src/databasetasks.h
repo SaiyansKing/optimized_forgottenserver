@@ -38,6 +38,17 @@ class DatabaseTasks : public ThreadHolder<DatabaseTasks>
 {
 	public:
 		DatabaseTasks() = default;
+
+		// Singleton - ensures we don't accidentally copy it
+		DatabaseTasks(DatabaseTasks const&) = delete;
+		void operator=(DatabaseTasks const&) = delete;
+
+		static DatabaseTasks& getInstance() {
+			static DatabaseTasks instance; // Guaranteed to be destroyed.
+														// Instantiated on first use.
+			return instance;
+		}
+
 		void flush();
 		void shutdown();
 
@@ -56,6 +67,6 @@ class DatabaseTasks : public ThreadHolder<DatabaseTasks>
 		bool flushTasks = false;
 };
 
-extern DatabaseTasks g_databaseTasks;
+constexpr auto g_databaseTasks = &DatabaseTasks::getInstance;
 
 #endif

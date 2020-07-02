@@ -24,10 +24,6 @@
 #include "configmanager.h"
 #include "events.h"
 
-extern Game g_game;
-extern ConfigManager g_config;
-extern Events* g_events;
-
 Party::Party(Player* leader) : leader(leader)
 {
 	leader->setParty(this);
@@ -35,7 +31,7 @@ Party::Party(Player* leader) : leader(leader)
 
 void Party::disband()
 {
-	if (!g_events->eventPartyOnDisband(this)) {
+	if (!g_events().eventPartyOnDisband(this)) {
 		return;
 	}
 
@@ -81,7 +77,7 @@ bool Party::leaveParty(Player* player)
 		return false;
 	}
 
-	if (!g_events->eventPartyOnLeave(this, player)) {
+	if (!g_events().eventPartyOnLeave(this, player)) {
 		return false;
 	}
 
@@ -185,7 +181,7 @@ bool Party::passPartyLeadership(Player* player)
 
 bool Party::joinParty(Player& player)
 {
-	if (!g_events->eventPartyOnJoin(this, &player)) {
+	if (!g_events().eventPartyOnJoin(this, &player)) {
 		return false;
 	}
 
@@ -381,7 +377,7 @@ bool Party::setSharedExperience(Player* player, bool sharedExpActive)
 void Party::shareExperience(uint64_t experience, Creature* source/* = nullptr*/)
 {
 	uint64_t shareExperience = experience;
-	g_events->eventPartyOnShareExperience(this, shareExperience);
+	g_events().eventPartyOnShareExperience(this, shareExperience);
 
 	for (Player* member : memberList) {
 		member->onGainSharedExperience(shareExperience, source);
@@ -419,7 +415,7 @@ bool Party::canUseSharedExperience(const Player* player) const
 		}
 
 		uint64_t timeDiff = OTSYS_TIME() - it->second;
-		if (timeDiff > static_cast<uint64_t>(g_config.getNumber(ConfigManager::PZ_LOCKED))) {
+		if (timeDiff > static_cast<uint64_t>(g_config().getNumber(ConfigManager::PZ_LOCKED))) {
 			return false;
 		}
 	}
@@ -459,7 +455,7 @@ void Party::clearPlayerPoints(Player* player)
 
 bool Party::canOpenCorpse(uint32_t ownerId) const
 {
-	if (Player* player = g_game.getPlayerByID(ownerId)) {
+	if (Player* player = g_game().getPlayerByID(ownerId)) {
 		return leader->getID() == ownerId || player->getParty() == this;
 	}
 	return false;
@@ -495,7 +491,7 @@ void Party::showPlayerStatus(Player* player, Player* member, bool showStatus)
 
 void Party::updatePlayerStatus(Player* player)
 {
-	int32_t maxDistance = g_config.getNumber(ConfigManager::PARTY_LIST_MAX_DISTANCE);
+	int32_t maxDistance = g_config().getNumber(ConfigManager::PARTY_LIST_MAX_DISTANCE);
 	for (Player* member : memberList) {
 		bool condition = (maxDistance == 0 || (Position::getDistanceX(player->getPosition(), member->getPosition()) <= maxDistance && Position::getDistanceY(player->getPosition(), member->getPosition()) <= maxDistance));
 		if (condition) {
@@ -514,7 +510,7 @@ void Party::updatePlayerStatus(Player* player)
 
 void Party::updatePlayerStatus(Player* player, const Position& oldPos, const Position& newPos)
 {
-	int32_t maxDistance = g_config.getNumber(ConfigManager::PARTY_LIST_MAX_DISTANCE);
+	int32_t maxDistance = g_config().getNumber(ConfigManager::PARTY_LIST_MAX_DISTANCE);
 	if (maxDistance != 0) {
 		for (Player* member : memberList) {
 			bool condition1 = (Position::getDistanceX(oldPos, member->getPosition()) <= maxDistance && Position::getDistanceY(oldPos, member->getPosition()) <= maxDistance);
@@ -538,7 +534,7 @@ void Party::updatePlayerStatus(Player* player, const Position& oldPos, const Pos
 
 void Party::updatePlayerHealth(const Player* player, const Creature* target, uint8_t healthPercent)
 {
-	int32_t maxDistance = g_config.getNumber(ConfigManager::PARTY_LIST_MAX_DISTANCE);
+	int32_t maxDistance = g_config().getNumber(ConfigManager::PARTY_LIST_MAX_DISTANCE);
 	for (Player* member : memberList) {
 		bool condition = (maxDistance == 0 || (Position::getDistanceX(player->getPosition(), member->getPosition()) <= maxDistance && Position::getDistanceY(player->getPosition(), member->getPosition()) <= maxDistance));
 		if (condition) {
@@ -553,7 +549,7 @@ void Party::updatePlayerHealth(const Player* player, const Creature* target, uin
 
 void Party::updatePlayerMana(const Player* player, uint8_t manaPercent)
 {
-	int32_t maxDistance = g_config.getNumber(ConfigManager::PARTY_LIST_MAX_DISTANCE);
+	int32_t maxDistance = g_config().getNumber(ConfigManager::PARTY_LIST_MAX_DISTANCE);
 	for (Player* member : memberList) {
 		bool condition = (maxDistance == 0 || (Position::getDistanceX(player->getPosition(), member->getPosition()) <= maxDistance && Position::getDistanceY(player->getPosition(), member->getPosition()) <= maxDistance));
 		if (condition) {

@@ -200,6 +200,7 @@ class Player final : public Creature, public Cylinder
 			return guid;
 		}
 		bool canSeeInvisibility() const override {
+			if (!group) return false;
 			return hasFlag(PlayerFlag_CanSenseInvisibility) || group->access;
 		}
 
@@ -335,6 +336,7 @@ class Player final : public Creature, public Cylinder
 		}
 
 		bool hasFlag(PlayerFlags value) const {
+			if (!group) return false;
 			return (group->flags & value) != 0;
 		}
 
@@ -448,6 +450,7 @@ class Player final : public Creature, public Cylinder
 			return soul;
 		}
 		bool isAccessPlayer() const {
+			if (!group) return false;
 			return group->access;
 		}
 		bool isPremium() const;
@@ -457,7 +460,7 @@ class Player final : public Creature, public Cylinder
 
 		bool setVocation(uint16_t vocId, bool internal = false);
 		uint16_t getVocationId() const {
-			return vocation->getId();
+			return vocation ? vocation->getId() : 0;
 		}
 
 		PlayerSex_t getSex() const {
@@ -480,7 +483,7 @@ class Player final : public Creature, public Cylinder
 			return loginPosition;
 		}
 		const Position& getTemplePosition() const {
-			return town->getTemplePosition();
+			return town ? town->getTemplePosition() : getPosition();
 		}
 		Town* getTown() const {
 			return town;
@@ -1541,7 +1544,7 @@ class Player final : public Creature, public Cylinder
 			return std::max<int32_t>(PLAYER_MIN_SPEED, std::min<int32_t>(PLAYER_MAX_SPEED, getSpeed()));
 		}
 		void updateBaseSpeed() {
-			if (!hasFlag(PlayerFlag_SetMaxSpeed)) {
+			if (vocation && !hasFlag(PlayerFlag_SetMaxSpeed)) {
 				baseSpeed = vocation->getBaseSpeed() + (2 * (level - 1));
 			} else {
 				baseSpeed = PLAYER_MAX_SPEED;
@@ -1551,7 +1554,7 @@ class Player final : public Creature, public Cylinder
 		bool isPromoted() const;
 
 		uint32_t getAttackSpeed() const {
-			return vocation->getAttackSpeed();
+			return vocation ? vocation->getAttackSpeed() : DEFAULT_ATTACK_SPEED;
 		}
 
 		static uint8_t getPercentLevel(uint64_t count, uint64_t nextLevelCount);

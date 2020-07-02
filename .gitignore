@@ -365,7 +365,7 @@ c_cpp_properties.json
 #############
 config.lua
 canary
-canary_tests
+canary-tests
 *.exe
 *.dll
 *.otb

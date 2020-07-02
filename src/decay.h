@@ -25,16 +25,27 @@
 class Decay
 {
 	public:
+		// Singleton, ensure we don't accidentally copy it
+		Decay(Decay const&) = delete;
+		void operator=(Decay const&) = delete;
+
+		static Decay& getInstance() {
+			static Decay instance; // Guaranteed to be destroyed.
+														// Instantiated on first use.
+			return instance;
+		}
 		void startDecay(Item* item, int32_t duration);
 		void stopDecay(Item* item, int64_t timestamp);
 
 	private:
+		Decay() {}
+
 		void checkDecay();
 
 		uint64_t eventId {0};
 		std::map<int64_t, std::vector<Item*>> decayMap;
 };
 
-extern Decay g_decay;
+constexpr auto g_decay = &Decay::getInstance;
 
 #endif

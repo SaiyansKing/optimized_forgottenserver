@@ -19,7 +19,7 @@
 
 #include "otpch.h"
 
-#include "script.h"
+#include "scripts.h"
 #include "configmanager.h"
 
 #ifdef __cpp_lib_filesystem
@@ -31,7 +31,6 @@ namespace fs = boost::filesystem;
 #endif
 
 extern LuaEnvironment g_luaEnvironment;
-extern ConfigManager g_config;
 
 Scripts::Scripts() :
 	scriptInterface("Scripts Interface")
@@ -63,7 +62,7 @@ bool Scripts::loadScripts(std::string folderName, bool isLib, bool reload)
 		if(fs::is_regular_file(*it) && it->path().extension() == ".lua") {
 			size_t found = it->path().filename().string().find(disable);
 			if (found != std::string::npos) {
-				if (g_config.getBoolean(ConfigManager::SCRIPTS_CONSOLE_LOGS)) {
+				if (g_config().getBoolean(ConfigManager::SCRIPTS_CONSOLE_LOGS)) {
 					std::cout << "> " << it->path().filename().string() << " [disabled]" << std::endl;
 				}
 				continue;
@@ -78,7 +77,7 @@ bool Scripts::loadScripts(std::string folderName, bool isLib, bool reload)
 		if (!isLib) {
 			if (redir.empty() || redir != it->parent_path().string()) {
 				auto p = fs::path(it->relative_path());
-				if (g_config.getBoolean(ConfigManager::SCRIPTS_CONSOLE_LOGS)) {
+				if (g_config().getBoolean(ConfigManager::SCRIPTS_CONSOLE_LOGS)) {
 					std::cout << ">> [" << p.parent_path().filename() << "]" << std::endl;
 				}
 				redir = it->parent_path().string();
@@ -91,7 +90,7 @@ bool Scripts::loadScripts(std::string folderName, bool isLib, bool reload)
 			continue;
 		}
 
-		if (g_config.getBoolean(ConfigManager::SCRIPTS_CONSOLE_LOGS)) {
+		if (g_config().getBoolean(ConfigManager::SCRIPTS_CONSOLE_LOGS)) {
 			if (!reload) {
 				std::cout << "> " << it->filename().string() << " [loaded]" << std::endl;
 			} else {

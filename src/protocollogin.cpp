@@ -29,9 +29,6 @@
 #include "ban.h"
 #include "game.h"
 
-extern ConfigManager g_config;
-extern Game g_game;
-
 void ProtocolLogin::disconnectClient(const std::string& message)
 {
 	auto output = OutputMessagePool::getOutputMessage();
@@ -51,7 +48,7 @@ void ProtocolLogin::getCharacterList(const std::string& accountName, const std::
 	#if !(GAME_FEATURE_LOGIN_EXTENDED > 0)
 	static uint32_t serverIp = INADDR_NONE;
 	if (serverIp == INADDR_NONE) {
-		std::string cfgIp = g_config.getString(ConfigManager::IP);
+		std::string cfgIp = g_config().getString(ConfigManager::IP);
 		serverIp = inet_addr(cfgIp.c_str());
 		if (serverIp == INADDR_NONE) {
 			struct hostent* he = gethostbyname(cfgIp.c_str());
@@ -108,13 +105,13 @@ void ProtocolLogin::getCharacterList(const std::string& accountName, const std::
 	Game::updatePremium(account);
 
 	//Check for MOTD
-	const std::string& motd = g_config.getString(ConfigManager::MOTD);
+	const std::string& motd = g_config().getString(ConfigManager::MOTD);
 	if (!motd.empty()) {
 		//Add MOTD
 		output->addByte(0x14);
 
 		std::ostringstream ss;
-		ss << g_game.getMotdNum() << "\n" << motd;
+		ss << g_game().getMotdNum() << "\n" << motd;
 		output->addString(ss.str());
 	}
 
@@ -131,9 +128,9 @@ void ProtocolLogin::getCharacterList(const std::string& accountName, const std::
 	output->addByte(1); // number of worlds
 
 	output->addByte(0); // world id
-	output->addString(g_config.getString(ConfigManager::SERVER_NAME));
-	output->addString(g_config.getString(ConfigManager::IP));
-	output->add<uint16_t>(g_config.getNumber(ConfigManager::GAME_PORT));
+	output->addString(g_config().getString(ConfigManager::SERVER_NAME));
+	output->addString(g_config().getString(ConfigManager::IP));
+	output->add<uint16_t>(g_config().getNumber(ConfigManager::GAME_PORT));
 	output->addByte(0);
 
 	uint8_t size = std::min<size_t>(std::numeric_limits<uint8_t>::max(), account.characters.size());
@@ -147,9 +144,9 @@ void ProtocolLogin::getCharacterList(const std::string& accountName, const std::
 	output->addByte(size);
 	for (uint8_t i = 0; i < size; i++) {
 		output->addString(account.characters[i]);
-		output->addString(g_config.getString(ConfigManager::SERVER_NAME));
+		output->addString(g_config().getString(ConfigManager::SERVER_NAME));
 		output->add<uint32_t>(serverIp);
-		output->add<uint16_t>(g_config.getNumber(ConfigManager::GAME_PORT));
+		output->add<uint16_t>(g_config().getNumber(ConfigManager::GAME_PORT));
 		#if GAME_FEATURE_PREVIEW_STATE > 0
 		output->addByte(0);
 		#endif
@@ -161,7 +158,7 @@ void ProtocolLogin::getCharacterList(const std::string& accountName, const std::
 	#if GAME_FEATURE_LOGIN_PREMIUM_TYPE > 0
 	output->addByte(0);
 	#endif
-	if (g_config.getBoolean(ConfigManager::FREE_PREMIUM)) {
+	if (g_config().getBoolean(ConfigManager::FREE_PREMIUM)) {
 		output->addByte(1);
 		output->add<uint32_t>(0);
 	} else {
@@ -169,7 +166,7 @@ void ProtocolLogin::getCharacterList(const std::string& accountName, const std::
 		output->add<uint32_t>(time(nullptr) + (account.premiumDays * 86400));
 	}
 	#else
-	if (g_config.getBoolean(ConfigManager::FREE_PREMIUM)) {
+	if (g_config().getBoolean(ConfigManager::FREE_PREMIUM)) {
 		output->add<uint16_t>(0xFFFF); //client displays free premium
 	} else {
 		output->add<uint16_t>(account.premiumDays);
@@ -183,7 +180,7 @@ void ProtocolLogin::getCharacterList(const std::string& accountName, const std::
 
 void ProtocolLogin::onRecvFirstMessage(NetworkMessage& msg)
 {
-	if (g_game.getGameState() == GAME_STATE_SHUTDOWN) {
+	if (g_game().getGameState() == GAME_STATE_SHUTDOWN) {
 		disconnect();
 		return;
 	}
@@ -210,12 +207,12 @@ void ProtocolLogin::onRecvFirstMessage(NetworkMessage& msg)
 
 	setChecksumMethod(CHECKSUM_METHOD_ADLER32);
 
-	if (g_game.getGameState() == GAME_STATE_STARTUP) {
+	if (g_game().getGameState() == GAME_STATE_STARTUP) {
 		disconnectClient("Gameworld is starting up. Please wait.");
 		return;
 	}
 
-	if (g_game.getGameState() == GAME_STATE_MAINTAIN) {
+	if (g_game().getGameState() == GAME_STATE_MAINTAIN) {
 		disconnectClient("Gameworld is under maintenance.\nPlease re-connect in a while.");
 		return;
 	}
@@ -247,9 +244,9 @@ void ProtocolLogin::onRecvFirstMessage(NetworkMessage& msg)
 	std::string authToken = msg.getString();
 
 	auto thisPtr = std::static_pointer_cast<ProtocolLogin>(shared_from_this());
-	g_dispatcher.addTask(std::bind(&ProtocolLogin::getCharacterList, thisPtr, std::move(accountName), std::move(password), std::move(authToken)));
+	g_dispatcher().addTask(std::bind(&ProtocolLogin::getCharacterList, thisPtr, std::move(accountName), std::move(password), std::move(authToken)));
 	#else
 	auto thisPtr = std::static_pointer_cast<ProtocolLogin>(shared_from_this());
-	g_dispatcher.addTask(std::bind(&ProtocolLogin::getCharacterList, thisPtr, std::move(accountName), std::move(password)));
+	g_dispatcher().addTask(std::bind(&ProtocolLogin::getCharacterList, thisPtr, std::move(accountName), std::move(password)));
 	#endif
 }
