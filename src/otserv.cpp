@@ -21,6 +21,7 @@
 
 #include "server.h"
 
+#include "events.h"
 #include "game.h"
 
 #include "modules.h"
@@ -242,6 +243,13 @@ void mainLoader(int, char*[], ServiceManager* services)
 		startupErrorMessage("Unable to load outfits!");
 		return;
 	}
+
+	spdlog::info("Loading events");
+	if (!g_events().load()) {
+		startupErrorMessage("Unable to load events!");
+		return;
+	}
+
 
 	std::string worldType = asLowerCaseString(g_config().getString(ConfigManager::WORLD_TYPE));
 	if (!tfs_strcmp(worldType.c_str(), "pvp")) {
