@@ -247,7 +247,7 @@ void mainLoader(int, char*[], ServiceManager* services)
 	spdlog::info("Loading events");
 	if (!g_events().load()) {
 		startupErrorMessage("Unable to load events!");
-		return
+		return;
 	}
 
 
