@@ -128,9 +128,6 @@ void Spawns::startup()
 
 	for (Npc* npc : npcList) {
 		g_game().placeCreature(npc, npc->getMasterPos(), false, true);
-		#if GAME_FEATURE_NEWSPEED_LAW > 0
-		npc->cacheSpeed();
-		#endif
 	}
 	npcList.clear();
 	npcList.shrink_to_fit();

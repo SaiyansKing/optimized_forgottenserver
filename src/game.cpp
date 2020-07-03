@@ -529,6 +529,11 @@ bool Game::internalPlaceCreature(Creature* creature, const Position& pos, bool e
 	creature->incrementReferenceCounter();
 	creature->setID();
 	creature->addList();
+	
+	#if GAME_FEATURE_NEWSPEED_LAW > 0
+	creature->cacheSpeed();
+	#endif
+
 	return true;
 }
 
