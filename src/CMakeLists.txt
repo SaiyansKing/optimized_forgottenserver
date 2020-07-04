@@ -126,12 +126,12 @@ target_include_directories(canary_lib SYSTEM
 
 target_link_libraries(canary_lib
                         PUBLIC
-                          ZLIB::ZLIB Boost::boost ${GMP_LIBRARIES}
-                          Threads::Threads mariadbclient pugixml::pugixml
-                          spdlog::spdlog ${LUA_LIBRARIES}
+                          Boost::boost Threads::Threads mariadbclient
+                          spdlog::spdlog
                         PRIVATE
+                          ZLIB::ZLIB pugixml::pugixml ${GMP_LIBRARIES}
                           Boost::system Boost::filesystem Boost::iostreams
-                          Boost::date_time doctest::doctest
+                          Boost::date_time doctest::doctest ${LUA_LIBRARIES}
 )
 
 
@@ -154,7 +154,10 @@ endif()
 # *****************************************************************************
 # Executable
 # *****************************************************************************
-add_executable(canary otserv.cpp)
+add_executable(canary
+              ${CMAKE_CURRENT_LIST_DIR}/otserv.cpp
+              ${CMAKE_CURRENT_LIST_DIR}/canary-server.rc
+              )
 
 
 # *****************************************************************************
