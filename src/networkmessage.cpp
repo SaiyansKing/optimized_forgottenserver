@@ -80,7 +80,7 @@ void NetworkMessage::addBytes(const char* bytes, size_t size)
 
 void NetworkMessage::addPaddingBytes(size_t n)
 {
-	#define canAdd(size) ((size + info.position) < NETWORKMESSAGE_MAXSIZE)
+	#define canAdd(size) ((size + info.position) < CanaryLib::NETWORKMESSAGE_MAXSIZE)
 	if (!canAdd(n)) {
 		return;
 	}

@@ -815,7 +815,7 @@ class Player final : public Creature, public Cylinder
 				client->sendPrivateMessage(speaker, type, text);
 			}
 		}
-		void sendCreatureSquare(const Creature* creature, SquareColor_t color) {
+		void sendCreatureSquare(const Creature* creature, Color_t color) {
 			if (client) {
 				client->sendCreatureSquare(creature, color);
 			}

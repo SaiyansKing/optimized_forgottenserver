@@ -765,7 +765,7 @@ bool ConditionRegeneration::executeCondition(Creature* creature, int32_t interva
 				TextMessage message(MESSAGE_HEALED, "You were healed for " + healString);
 				message.position = player->getPosition();
 				message.primary.value = realHealthGain;
-				message.primary.color = TEXTCOLOR_MAYABLUE;
+				message.primary.color = COLOR_MAYABLUE;
 				player->sendTextMessage(message);
 
 				SpectatorVector spectators;
@@ -796,7 +796,7 @@ bool ConditionRegeneration::executeCondition(Creature* creature, int32_t interva
 				TextMessage message(MESSAGE_HEALED, "You gained " + manaGainString + " mana.");
 				message.position = player->getPosition();
 				message.primary.value = realManaGain;
-				message.primary.color = TEXTCOLOR_MAYABLUE;
+				message.primary.color = COLOR_MAYABLUE;
 				player->sendTextMessage(message);
 
 				SpectatorVector spectators;

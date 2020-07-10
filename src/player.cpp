@@ -1743,7 +1743,7 @@ void Player::addExperience(Creature* source, uint64_t exp, bool sendText/* = fal
 		TextMessage message(MESSAGE_EXPERIENCE, "You gained " + expString);
 		message.position = position;
 		message.primary.value = exp;
-		message.primary.color = TEXTCOLOR_WHITE_EXP;
+		message.primary.color = COLOR_WHITE_EXP;
 		sendTextMessage(message);
 
 		SpectatorVector spectators;
@@ -1834,7 +1834,7 @@ void Player::removeExperience(uint64_t exp, bool sendText/* = false*/)
 		TextMessage message(MESSAGE_EXPERIENCE, "You lost " + expString);
 		message.position = position;
 		message.primary.value = lostExp;
-		message.primary.color = TEXTCOLOR_RED;
+		message.primary.color = COLOR_RED;
 		sendTextMessage(message);
 
 		SpectatorVector spectators;
@@ -1971,7 +1971,7 @@ BlockType_t Player::blockHit(Creature* attacker, CombatType_t combatType, int32_
 	BlockType_t blockType = Creature::blockHit(attacker, combatType, damage, checkDefense, checkArmor, field);
 
 	if (attacker) {
-		sendCreatureSquare(attacker, SQ_COLOR_BLACK);
+		sendCreatureSquare(attacker, COLOR_BLACK);
 	}
 
 	if (blockType != BLOCK_NONE) {

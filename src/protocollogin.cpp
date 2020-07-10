@@ -108,7 +108,7 @@ void ProtocolLogin::getCharacterList(const std::string& accountName, const std::
 	const std::string& motd = g_config().getString(ConfigManager::MOTD);
 	if (!motd.empty()) {
 		//Add MOTD
-		output->addByte(0x14);
+		output->addByte(CanaryLib::LoginServerMotd);
 
 		std::ostringstream ss;
 		ss << g_game().getMotdNum() << "\n" << motd;
@@ -122,7 +122,7 @@ void ProtocolLogin::getCharacterList(const std::string& accountName, const std::
 	#endif
 
 	//Add char list
-	output->addByte(0x64);
+	output->addByte(CanaryLib::LoginServerCharacterList);
 
 	#if GAME_FEATURE_LOGIN_EXTENDED > 0
 	output->addByte(1); // number of worlds

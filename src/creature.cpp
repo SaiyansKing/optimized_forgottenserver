@@ -1128,7 +1128,7 @@ void Creature::onGainExperience(uint64_t gainExp, Creature* target)
 
 	TextMessage message(MESSAGE_EXPERIENCE_OTHERS, ucfirst(getNameDescription()) + " gained " + std::to_string(gainExp) + (gainExp != 1 ? " experience points." : " experience point."));
 	message.position = position;
-	message.primary.color = TEXTCOLOR_WHITE_EXP;
+	message.primary.color = COLOR_WHITE_EXP;
 	message.primary.value = gainExp;
 
 	for (Creature* spectator : spectators) {

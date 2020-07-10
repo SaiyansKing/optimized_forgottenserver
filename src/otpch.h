@@ -19,32 +19,19 @@
 
 #define FS_OTPCH_H_F00C737DA6CA4C8D90F57430C614367F
 
+#include <boost/asio.hpp>
+
 // Definitions should be global.
 #include "definitions.h"
-
-#include <algorithm>
-#include <chrono>
-#include <cstdint>
-#include <forward_list>
-#include <functional>
-#include <iomanip>
-#include <iostream>
-#include <list>
-#include <map>
-#include <memory>
-#include <mutex>
-#include <sstream>
 #include "stringExtend.h"
-#include <thread>
-#include <unordered_map>
-#include <vector>
-
-#include <boost/asio.hpp>
 
 #include "pugixml/src/pugixml.hpp"
 #include "spdlog/spdlog.h"
 #include "simd.h"
 #include "features.h"
+
+// Canary Lib
+#include "lib/include.hpp"
 
 #if GAME_FEATURE_ROBINHOOD_HASH_MAP > 0
 #include "robin_hood.h"

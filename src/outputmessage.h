@@ -53,14 +53,14 @@ class OutputMessage : public NetworkMessage
 
 		void append(const NetworkMessage& msg) {
 			auto msgLen = msg.getLength();
-			memcpy(buffer + info.position, msg.getBuffer() + INITIAL_BUFFER_POSITION, msgLen);
+			memcpy(buffer + info.position, msg.getBuffer() + CanaryLib::MAX_HEADER_SIZE, msgLen);
 			info.length += msgLen;
 			info.position += msgLen;
 		}
 
 		void append(const OutputMessage_ptr& msg) {
 			auto msgLen = msg->getLength();
-			memcpy(buffer + info.position, msg->getBuffer() + INITIAL_BUFFER_POSITION, msgLen);
+			memcpy(buffer + info.position, msg->getBuffer() + CanaryLib::MAX_HEADER_SIZE, msgLen);
 			info.length += msgLen;
 			info.position += msgLen;
 		}
@@ -75,7 +75,7 @@ class OutputMessage : public NetworkMessage
 			info.length += sizeof(T);
 		}
 
-		MsgSize_t outputBufferStart = INITIAL_BUFFER_POSITION;
+		CanaryLib::MsgSize_t outputBufferStart = CanaryLib::MAX_HEADER_SIZE;
 };
 
 class OutputMessagePool

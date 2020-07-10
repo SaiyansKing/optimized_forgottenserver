@@ -33,10 +33,9 @@ find_package(GMP REQUIRED)
 # *****************************************************************************
 # Library
 # *****************************************************************************
-add_library(canary_lib "")
-target_sources(canary_lib
+add_library(canary_server_lib "")
+target_sources(canary_server_lib
   PRIVATE
-    ${CMAKE_CURRENT_LIST_DIR}/otpch.cpp
     ${CMAKE_CURRENT_LIST_DIR}/actions.cpp
     ${CMAKE_CURRENT_LIST_DIR}/ban.cpp
     ${CMAKE_CURRENT_LIST_DIR}/baseevents.cpp
@@ -111,20 +110,20 @@ target_sources(canary_lib
     ${CMAKE_CURRENT_LIST_DIR}/weapons.cpp
     ${CMAKE_CURRENT_LIST_DIR}/wildcardtree.cpp
 )
-target_include_directories(canary_lib
+target_include_directories(canary_server_lib
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
-add_library(canary_lib::canary_lib ALIAS canary_lib)
+add_library(canary_lib::server_lib ALIAS canary_server_lib)
 
-target_include_directories(canary_lib SYSTEM
+target_include_directories(canary_server_lib SYSTEM
                           PUBLIC
                             ${LUA_INCLUDE_DIR}
                             ${CANARY_EXTERNAL_PATH}
                             ${GMP_INCLUDE_DIR}
 )
 
-target_link_libraries(canary_lib
+target_link_libraries(canary_server_lib
                         PUBLIC
                           Boost::boost Threads::Threads mariadbclient
                           spdlog::spdlog
@@ -146,8 +145,8 @@ set(POST_CONFIGURE_FILE "${CMAKE_CURRENT_BINARY_DIR}/gitmetadata.h")
 include(GitWatcher)
 if (Git_FOUND)
     message("-- Git Found")
-    add_dependencies(canary_lib check_git)
-    target_include_directories(canary_lib PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+    add_dependencies(canary_server_lib check_git)
+    target_include_directories(canary_server_lib PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
 
@@ -163,7 +162,7 @@ add_executable(canary
 # *****************************************************************************
 # canary build options
 # *****************************************************************************
-target_link_libraries(canary PRIVATE canary_lib::canary_lib)
+target_link_libraries(canary PRIVATE canary_lib::server_lib canary_lib::common_lib)
 set_target_properties(canary
     PROPERTIES
       RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"

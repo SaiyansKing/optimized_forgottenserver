@@ -467,7 +467,12 @@ class Game
 
 		bool combatBlockHit(CombatDamage& damage, Creature* attacker, Creature* target, bool checkDefense, bool checkArmor, bool field);
 
-		void combatGetTypeInfo(CombatType_t combatType, Creature* target, TextColor_t& color, uint8_t& effect);
+		void combatGetTypeInfo(
+			CombatType_t combatType,
+			Creature* target,
+			Color_t* color,
+			uint8_t* effect
+		);
 
 		bool combatChangeHealth(Creature* attacker, Creature* target, CombatDamage& damage);
 		bool combatChangeMana(Creature* attacker, Creature* target, CombatDamage& damage);

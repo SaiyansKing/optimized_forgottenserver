@@ -1701,21 +1701,21 @@ void LuaScriptInterface::registerFunctions()
 	registerEnum(TALKTYPE_CHANNEL_R2)
 	registerEnum(TALKTYPE_BOOSTED_CREATURE)
 
-	registerEnum(TEXTCOLOR_BLUE)
-	registerEnum(TEXTCOLOR_LIGHTGREEN)
-	registerEnum(TEXTCOLOR_LIGHTBLUE)
-	registerEnum(TEXTCOLOR_MAYABLUE)
-	registerEnum(TEXTCOLOR_DARKRED)
-	registerEnum(TEXTCOLOR_LIGHTGREY)
-	registerEnum(TEXTCOLOR_SKYBLUE)
-	registerEnum(TEXTCOLOR_PURPLE)
-	registerEnum(TEXTCOLOR_ELECTRICPURPLE)
-	registerEnum(TEXTCOLOR_RED)
-	registerEnum(TEXTCOLOR_PASTELRED)
-	registerEnum(TEXTCOLOR_ORANGE)
-	registerEnum(TEXTCOLOR_YELLOW)
-	registerEnum(TEXTCOLOR_WHITE_EXP)
-	registerEnum(TEXTCOLOR_NONE)
+	registerEnum(COLOR_BLUE)
+	registerEnum(COLOR_LIGHTGREEN)
+	registerEnum(COLOR_LIGHTBLUE)
+	registerEnum(COLOR_MAYABLUE)
+	registerEnum(COLOR_DARKRED)
+	registerEnum(COLOR_LIGHTGREY)
+	registerEnum(COLOR_SKYBLUE)
+	registerEnum(COLOR_PURPLE)
+	registerEnum(COLOR_ELECTRICPURPLE)
+	registerEnum(COLOR_RED)
+	registerEnum(COLOR_PASTELRED)
+	registerEnum(COLOR_ORANGE)
+	registerEnum(COLOR_YELLOW)
+	registerEnum(COLOR_WHITE_EXP)
+	registerEnum(COLOR_NONE)
 
 	registerEnum(TILESTATE_NONE)
 	registerEnum(TILESTATE_PROTECTIONZONE)
@@ -4088,7 +4088,7 @@ const luaL_Reg LuaScriptInterface::luaBitReg[] = {
 
 int LuaScriptInterface::luaBitNot(lua_State* L)
 {
-	lua_pushnumber(L, ~getNumber<uint32_t>(L, -1));
+	lua_pushnumber(L, getNumber<uint32_t>(L, ~(-1)));
 	return 1;
 }
 
@@ -6008,7 +6008,7 @@ int LuaScriptInterface::luaNetworkMessageGetMsgPosition(lua_State* L)
 int LuaScriptInterface::luaNetworkMessageSetMsgPosition(lua_State* L)
 {
 	// networkMessage:setMsgPosition(position)
-	auto position = getNumber<NetworkMessage::MsgSize_t>(L, 2);
+	auto position = getNumber<CanaryLib::MsgSize_t>(L, 2);
 	NetworkMessage* message = getUserdata<NetworkMessage>(L, 1);
 	if (message) {
 		message->setBufferPosition(position);
@@ -9578,7 +9578,12 @@ int LuaScriptInterface::luaPlayerShowTextDialog(lua_State* L)
 
 int LuaScriptInterface::luaPlayerSendTextMessage(lua_State* L)
 {
-	// player:sendTextMessage(type, text[, position, primaryValue = 0, primaryColor = TEXTCOLOR_NONE[, secondaryValue = 0, secondaryColor = TEXTCOLOR_NONE]])
+	// player:sendTextMessage(
+	// 	type,
+	// 	text[, position, primaryValue = 0,
+	// 	primaryColor = COLOR_NONE[, secondaryValue = 0,
+	// 	secondaryColor = COLOR_NONE]]
+	// )
 	// player:sendTextMessage(type, text, channelId)
 
 	Player* player = getUserdata<Player>(L, 1);
@@ -9602,12 +9607,12 @@ int LuaScriptInterface::luaPlayerSendTextMessage(lua_State* L)
 		if (parameters >= 6) {
 			message.position = getPosition(L, 4);
 			message.primary.value = getNumber<int32_t>(L, 5);
-			message.primary.color = getNumber<TextColor_t>(L, 6);
+			message.primary.color = getNumber<Color_t>(L, 6);
 		}
 
 		if (parameters >= 8) {
 			message.secondary.value = getNumber<int32_t>(L, 7);
-			message.secondary.color = getNumber<TextColor_t>(L, 8);
+			message.secondary.color = getNumber<Color_t>(L, 8);
 		}
 	}
 

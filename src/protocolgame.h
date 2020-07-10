@@ -44,7 +44,7 @@ struct TextMessage
 	uint16_t channelId;
 	struct {
 		int32_t value = 0;
-		TextColor_t color;
+		Color_t color;
 	} primary, secondary;
 
 	TextMessage() = default;
@@ -311,7 +311,7 @@ class ProtocolGame final : public Protocol
 		void sendWorldLight(LightInfo lightInfo);
 		void sendTibiaTime(int32_t time);
 
-		void sendCreatureSquare(const Creature* creature, SquareColor_t color);
+		void sendCreatureSquare(const Creature* creature, Color_t color);
 
 		void sendSpellCooldown(uint8_t spellId, uint32_t time);
 		void sendSpellGroupCooldown(SpellGroup_t groupId, uint32_t time);

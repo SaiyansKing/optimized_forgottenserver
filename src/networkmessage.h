@@ -31,16 +31,14 @@ class RSA;
 class NetworkMessage
 {
 	public:
-		using MsgSize_t = uint16_t;
 		// Headers:
 		// 2 bytes for unencrypted message size
 		// 4 bytes for checksum
 		// 2 bytes for encrypted message size
-		static constexpr MsgSize_t INITIAL_BUFFER_POSITION = 8;
 		enum { HEADER_LENGTH = 2 };
 		enum { CHECKSUM_LENGTH = 4 };
 		enum { XTEA_MULTIPLE = 8 };
-		enum { MAX_BODY_LENGTH = NETWORKMESSAGE_MAXSIZE - HEADER_LENGTH - CHECKSUM_LENGTH - XTEA_MULTIPLE };
+		enum { MAX_BODY_LENGTH = CanaryLib::NETWORKMESSAGE_MAXSIZE - HEADER_LENGTH - CHECKSUM_LENGTH - XTEA_MULTIPLE };
 		enum { MAX_PROTOCOL_BODY_LENGTH = MAX_BODY_LENGTH - XTEA_MULTIPLE };
 
 		NetworkMessage() = default;
@@ -114,19 +112,19 @@ class NetworkMessage
 		void addPosition(const Position& pos);
 		void addItemId(uint16_t itemId);
 
-		MsgSize_t getLength() const {
+		CanaryLib::MsgSize_t getLength() const {
 			return info.length;
 		}
 
-		void setLength(MsgSize_t newLength) {
+		void setLength(CanaryLib::MsgSize_t newLength) {
 			info.length = newLength;
 		}
 
-		MsgSize_t getBufferPosition() const {
+		CanaryLib::MsgSize_t getBufferPosition() const {
 			return info.position;
 		}
 
-		void setBufferPosition(MsgSize_t newPosition) {
+		void setBufferPosition(CanaryLib::MsgSize_t newPosition) {
 			info.position = newPosition;
 		}
 
@@ -153,13 +151,13 @@ class NetworkMessage
 
 	protected:
 		struct NetworkMessageInfo {
-			MsgSize_t length = 0;
-			MsgSize_t position = INITIAL_BUFFER_POSITION;
+			CanaryLib::MsgSize_t length = 0;
+			CanaryLib::MsgSize_t position = CanaryLib::MAX_HEADER_SIZE;
 			bool overrun = false;
 		};
 
 		NetworkMessageInfo info;
-		uint8_t buffer[NETWORKMESSAGE_MAXSIZE];
+		uint8_t buffer[CanaryLib::NETWORKMESSAGE_MAXSIZE];
 
 	private:
 		bool canAdd(size_t size) const {
@@ -167,7 +165,7 @@ class NetworkMessage
 		}
 
 		bool canRead(int32_t size) {
-			if ((info.position + size) > (info.length + 8) || size >= (NETWORKMESSAGE_MAXSIZE - info.position)) {
+			if ((info.position + size) > (info.length + 8) || size >= (CanaryLib::NETWORKMESSAGE_MAXSIZE - info.position)) {
 				info.overrun = true;
 				return false;
 			}

@@ -7,6 +7,11 @@ cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 project(canary VERSION 1.0.0 LANGUAGES CXX)
 
 # *****************************************************************************
+# Configure CanaryLib variable
+# *****************************************************************************
+set(CANARY_LIB_PATH ${CMAKE_SOURCE_DIR}/src/lib)
+
+# *****************************************************************************
 # Configure 3rd party variables
 # *****************************************************************************
 set(CANARY_3RD_PARTY_PATH             ${CMAKE_SOURCE_DIR}/3rd)
@@ -35,3 +40,4 @@ include(doctest)
 include(OptionCompilerWarnings)
 add_subdirectory(3rd)
 add_subdirectory(src)
+add_subdirectory(${CANARY_LIB_PATH})

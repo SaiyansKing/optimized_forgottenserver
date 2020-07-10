@@ -3649,33 +3649,37 @@ bool Game::combatBlockHit(CombatDamage& damage, Creature* attacker, Creature* ta
 	return (primaryBlockType != BLOCK_NONE) && (secondaryBlockType != BLOCK_NONE);
 }
 
-void Game::combatGetTypeInfo(CombatType_t combatType, Creature* target, TextColor_t& color, uint8_t& effect)
-{
+void Game::combatGetTypeInfo(
+	CombatType_t combatType,
+	Creature* target,
+	Color_t* color,
+	uint8_t* effect
+) {
 	switch (combatType) {
 		case COMBAT_PHYSICALDAMAGE: {
 			Item* splash = nullptr;
 			switch (target->getRace()) {
 				case RACE_VENOM:
-					color = TEXTCOLOR_LIGHTGREEN;
-					effect = CONST_ME_HITBYPOISON;
+					*color = COLOR_LIGHTGREEN;
+					*effect = CONST_ME_HITBYPOISON;
 					splash = Item::CreateItem(ITEM_SMALLSPLASH, FLUID_SLIME);
 					break;
 				case RACE_UNDEAD:
-					color = TEXTCOLOR_LIGHTGREY;
-					effect = CONST_ME_HITAREA;
+					*color = COLOR_LIGHTGREY;
+					*effect = CONST_ME_HITAREA;
 					break;
 				case RACE_FIRE:
-					color = TEXTCOLOR_ORANGE;
-					effect = CONST_ME_DRAWBLOOD;
+					*color = COLOR_ORANGE;
+					*effect = CONST_ME_DRAWBLOOD;
 					break;
 				case RACE_ENERGY:
-					color = TEXTCOLOR_ELECTRICPURPLE;
-					effect = CONST_ME_ENERGYHIT;
+					*color = COLOR_ELECTRICPURPLE;
+					*effect = CONST_ME_ENERGYHIT;
 					break;
 				case RACE_BLOOD:
 				default:
-					color = TEXTCOLOR_RED;
-					effect = CONST_ME_DRAWBLOOD;
+					*color = COLOR_RED;
+					*effect = CONST_ME_DRAWBLOOD;
 					if (const Tile* tile = target->getTile()) {
 						if (!tile->hasFlag(TILESTATE_PROTECTIONZONE)) {
 							splash = Item::CreateItem(ITEM_SMALLSPLASH, FLUID_BLOOD);
@@ -3693,50 +3697,50 @@ void Game::combatGetTypeInfo(CombatType_t combatType, Creature* target, TextColo
 		}
 
 		case COMBAT_ENERGYDAMAGE: {
-			color = TEXTCOLOR_ELECTRICPURPLE;
-			effect = CONST_ME_ENERGYHIT;
+			*color = COLOR_ELECTRICPURPLE;
+			*effect = CONST_ME_ENERGYHIT;
 			break;
 		}
 
 		case COMBAT_EARTHDAMAGE: {
-			color = TEXTCOLOR_LIGHTGREEN;
-			effect = CONST_ME_GREEN_RINGS;
+			*color = COLOR_LIGHTGREEN;
+			*effect = CONST_ME_GREEN_RINGS;
 			break;
 		}
 
 		case COMBAT_DROWNDAMAGE: {
-			color = TEXTCOLOR_LIGHTBLUE;
-			effect = CONST_ME_LOSEENERGY;
+			*color = COLOR_LIGHTBLUE;
+			*effect = CONST_ME_LOSEENERGY;
 			break;
 		}
 		case COMBAT_FIREDAMAGE: {
-			color = TEXTCOLOR_ORANGE;
-			effect = CONST_ME_HITBYFIRE;
+			*color = COLOR_ORANGE;
+			*effect = CONST_ME_HITBYFIRE;
 			break;
 		}
 		case COMBAT_ICEDAMAGE: {
-			color = TEXTCOLOR_SKYBLUE;
-			effect = CONST_ME_ICEATTACK;
+			*color = COLOR_SKYBLUE;
+			*effect = CONST_ME_ICEATTACK;
 			break;
 		}
 		case COMBAT_HOLYDAMAGE: {
-			color = TEXTCOLOR_YELLOW;
-			effect = CONST_ME_HOLYDAMAGE;
+			*color = COLOR_YELLOW;
+			*effect = CONST_ME_HOLYDAMAGE;
 			break;
 		}
 		case COMBAT_DEATHDAMAGE: {
-			color = TEXTCOLOR_DARKRED;
-			effect = CONST_ME_SMALLCLOUDS;
+			*color = COLOR_DARKRED;
+			*effect = CONST_ME_SMALLCLOUDS;
 			break;
 		}
 		case COMBAT_LIFEDRAIN: {
-			color = TEXTCOLOR_RED;
-			effect = CONST_ME_MAGIC_RED;
+			*color = COLOR_RED;
+			*effect = CONST_ME_MAGIC_RED;
 			break;
 		}
 		default: {
-			color = TEXTCOLOR_NONE;
-			effect = CONST_ME_NONE;
+			*color = COLOR_NONE;
+			*effect = CONST_ME_NONE;
 			break;
 		}
 	}
@@ -3788,7 +3792,7 @@ bool Game::combatChangeHealth(Creature* attacker, Creature* target, CombatDamage
 			TextMessage message;
 			message.position = targetPos;
 			message.primary.value = realHealthChange;
-			message.primary.color = TEXTCOLOR_PASTELRED;
+			message.primary.color = COLOR_PASTELRED;
 
 			SpectatorVector spectators;
 			map.getSpectators(spectators, targetPos, false, true);
@@ -3915,7 +3919,7 @@ bool Game::combatChangeHealth(Creature* attacker, Creature* target, CombatDamage
 				std::string spectatorMessage;
 
 				message.primary.value = manaDamage;
-				message.primary.color = TEXTCOLOR_BLUE;
+				message.primary.color = COLOR_BLUE;
 
 				for (Creature* spectator : spectators) {
 					Player* tmpPlayer = spectator->getPlayer();
@@ -4007,20 +4011,22 @@ bool Game::combatChangeHealth(Creature* attacker, Creature* target, CombatDamage
 
 		uint8_t hitEffect;
 		if (message.primary.value) {
-			combatGetTypeInfo(damage.primary.type, target, message.primary.color, hitEffect);
+			combatGetTypeInfo(damage.primary.type, target, &(message.primary.color), &hitEffect);
 			if (hitEffect != CONST_ME_NONE) {
 				addMagicEffect(spectators, targetPos, hitEffect);
 			}
 		}
 
 		if (message.secondary.value) {
-			combatGetTypeInfo(damage.secondary.type, target, message.secondary.color, hitEffect);
+			combatGetTypeInfo(damage.secondary.type, target, &(message.secondary.color), &hitEffect);
 			if (hitEffect != CONST_ME_NONE) {
 				addMagicEffect(spectators, targetPos, hitEffect);
 			}
 		}
 
-		if (message.primary.color != TEXTCOLOR_NONE || message.secondary.color != TEXTCOLOR_NONE) {
+		if (message.primary.color != COLOR_NONE ||
+			message.secondary.color != COLOR_NONE
+		) {
 			std::stringstream ss;
 
 			ss << realDamage << (realDamage != 1 ? " hitpoints" : " hitpoint");
@@ -4132,7 +4138,7 @@ bool Game::combatChangeMana(Creature* attacker, Creature* target, CombatDamage& 
 			TextMessage message(MESSAGE_HEALED, "You gained " + std::to_string(realManaChange) + " mana.");
 			message.position = target->getPosition();
 			message.primary.value = realManaChange;
-			message.primary.color = TEXTCOLOR_MAYABLUE;
+			message.primary.color = COLOR_MAYABLUE;
 			targetPlayer->sendTextMessage(message);
 		}
 	} else {
@@ -4188,7 +4194,7 @@ bool Game::combatChangeMana(Creature* attacker, Creature* target, CombatDamage& 
 		TextMessage message;
 		message.position = targetPos;
 		message.primary.value = manaLoss;
-		message.primary.color = TEXTCOLOR_BLUE;
+		message.primary.color = COLOR_BLUE;
 
 		SpectatorVector spectators;
 		map.getSpectators(spectators, targetPos, false, true);

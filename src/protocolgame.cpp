@@ -1556,9 +1556,9 @@ void ProtocolGame::updateCreatureData(const Creature* creature)
 	if ((regularOS >= CLIENTOS_NEW_LINUX && regularOS < CLIENTOS_OTCLIENT_LINUX) || tfcOS >= CLIENTOS_TFC_ANDROID) {
 		//Using some hack so that I'm don't need to modify AddCreature function
 		playermsg.reset();
-		playermsg.setBufferPosition(NetworkMessage::INITIAL_BUFFER_POSITION - 1);
+		playermsg.setBufferPosition(CanaryLib::MAX_HEADER_SIZE - 1);
 		AddCreature(creature, false, cid);
-		playermsg.setBufferPosition(NetworkMessage::INITIAL_BUFFER_POSITION);
+		playermsg.setBufferPosition(CanaryLib::MAX_HEADER_SIZE);
 		playermsg.addByte(0x03);
 		playermsg.setLength(playermsg.getLength() - 2);
 		writeToOutputBuffer(playermsg);
@@ -1663,7 +1663,7 @@ void ProtocolGame::sendCreatureType(const Creature* creature, uint8_t creatureTy
 	writeToOutputBuffer(playermsg);
 }
 
-void ProtocolGame::sendCreatureSquare(const Creature* creature, SquareColor_t color)
+void ProtocolGame::sendCreatureSquare(const Creature* creature, Color_t color)
 {
 	if (!canSee(creature)) {
 		return;
@@ -3586,7 +3586,7 @@ void ProtocolGame::sendAddCreature(const Creature* creature, const Position& pos
 	#if GAME_FEATURE_LOGIN_PENDING > 0
 	playermsg.addByte(0x17);
 	#else
-	playermsg.addByte(0x0A);
+	playermsg.addByte(CanaryLib::GameServerLoginOrPendingState);
 	#endif
 
 	playermsg.add<uint32_t>(player->getID());
@@ -3622,8 +3622,10 @@ void ProtocolGame::sendAddCreature(const Creature* creature, const Position& pos
 	#endif
 
 	#if GAME_FEATURE_LOGIN_PENDING > 0
-	playermsg.addByte(0x0A); // sendPendingStateEntered
-	playermsg.addByte(0x0F); // sendWorldEnter
+	// sendPendingStateEntered
+	playermsg.addByte(CanaryLib::GameServerLoginOrPendingState);
+	// sendWorldEnter
+	playermsg.addByte(CanaryLib::GameServerEnterGame);
 	#endif
 
 	//gameworld settings

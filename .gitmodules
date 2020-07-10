@@ -10,3 +10,6 @@
 [submodule "external/doctest"]
 	path = external/doctest
 	url = https://github.com/onqtam/doctest.git
+[submodule "src/lib"]
+	path = src/lib
+	url = https://github.com/CanaryProject/lib

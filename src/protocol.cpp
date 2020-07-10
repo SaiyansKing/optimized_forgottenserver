@@ -528,11 +528,11 @@ void Protocol::enableCompression()
 
 bool Protocol::compression(OutputMessage& msg)
 {
-	static thread_local uint8_t defBuffer[NETWORKMESSAGE_MAXSIZE];
+	static thread_local uint8_t defBuffer[CanaryLib::NETWORKMESSAGE_MAXSIZE];
 	defStream->next_in = msg.getOutputBuffer();
 	defStream->avail_in = msg.getLength();
 	defStream->next_out = defBuffer;
-	defStream->avail_out = NETWORKMESSAGE_MAXSIZE;
+	defStream->avail_out = CanaryLib::NETWORKMESSAGE_MAXSIZE;
 
 	int32_t ret = deflate(defStream.get(), Z_FINISH);
 	if (ret != Z_OK && ret != Z_STREAM_END) {
