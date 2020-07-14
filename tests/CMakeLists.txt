@@ -11,7 +11,7 @@ add_executable(canary-tests main.cpp ${CANARY_TEST_SRC})
 
 target_compile_definitions(canary-tests PUBLIC -DUNIT_TESTING -DDEBUG_LOG)
 
-target_link_libraries(canary-tests doctest::doctest canary_lib::server_lib)
+target_link_libraries(canary-tests canary_lib::server_lib)
 
 set_target_properties(canary-tests
     PROPERTIES

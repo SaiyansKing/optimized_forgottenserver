@@ -9,7 +9,7 @@ project(canary VERSION 1.0.0 LANGUAGES CXX)
 # *****************************************************************************
 # Configure CanaryLib variable
 # *****************************************************************************
-set(CANARY_LIB_PATH ${CMAKE_SOURCE_DIR}/src/lib)
+set(CANARY_LIB_PATH ${CMAKE_SOURCE_DIR}/canary-lib)
 
 # *****************************************************************************
 # Configure 3rd party variables
@@ -40,4 +40,4 @@ include(doctest)
 include(OptionCompilerWarnings)
 add_subdirectory(3rd)
 add_subdirectory(src)
-add_subdirectory(${CANARY_LIB_PATH})
+add_subdirectory(canary-lib)

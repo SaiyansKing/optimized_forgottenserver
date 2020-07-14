@@ -120,6 +120,7 @@ target_include_directories(canary_server_lib SYSTEM
                           PUBLIC
                             ${LUA_INCLUDE_DIR}
                             ${CANARY_EXTERNAL_PATH}
+                            ${CANARY_LIB_PATH}
                             ${GMP_INCLUDE_DIR}
 )
 
@@ -130,7 +131,7 @@ target_link_libraries(canary_server_lib
                         PRIVATE
                           ZLIB::ZLIB pugixml::pugixml ${GMP_LIBRARIES}
                           Boost::system Boost::filesystem Boost::iostreams
-                          Boost::date_time doctest::doctest ${LUA_LIBRARIES}
+                          Boost::date_time ${LUA_LIBRARIES}
 )
 
 
