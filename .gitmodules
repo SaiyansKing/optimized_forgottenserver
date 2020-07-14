@@ -1,9 +1,6 @@
 [submodule "external/mariadb-connector-c"]
 	path = external/mariadb-connector-c
 	url = https://github.com/mariadb-corporation/mariadb-connector-c.git
-[submodule "external/spdlog"]
-	path = external/spdlog
-	url = https://github.com/gabime/spdlog.git
 [submodule "external/pugixml"]
 	path = external/pugixml
 	url = https://github.com/zeux/pugixml.git

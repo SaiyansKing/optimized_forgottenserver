@@ -137,7 +137,7 @@ void ServicePort::onAccept(Connection_ptr connection, const boost::system::error
 
 Protocol_ptr ServicePort::make_protocol(bool checksummed, NetworkMessage& msg, const Connection_ptr& connection) const
 {
-	uint8_t protocolID = msg.getByte();
+	uint8_t protocolID = msg.readByte();
 	for (auto& service : services) {
 		if (protocolID != service->get_protocol_identifier()) {
 			continue;

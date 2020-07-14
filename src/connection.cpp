@@ -116,7 +116,7 @@ void Connection::accept(Protocol_ptr protocol)
 
 		// Read header bytes to identify if it is proxy identification
 		boost::asio::async_read(socket,
-								boost::asio::buffer(msg.getBuffer(), NetworkMessage::HEADER_LENGTH),
+								boost::asio::buffer(msg.getBuffer(), CanaryLib::HEADER_LENGTH),
 								std::bind(&Connection::parseProxyIdentification, shared_from_this(), std::placeholders::_1));
 	}
 	catch (boost::system::system_error& e) {
@@ -134,7 +134,7 @@ void Connection::accept()
 
 		// Read size of the first packet
 		boost::asio::async_read(socket,
-		                        boost::asio::buffer(msg.getBuffer(), NetworkMessage::HEADER_LENGTH),
+		                        boost::asio::buffer(msg.getBuffer(), CanaryLib::HEADER_LENGTH),
 		                        std::bind(&Connection::parseHeader, shared_from_this(), std::placeholders::_1));
 	} catch (boost::system::system_error& e) {
 		std::cout << "[Network error - Connection::accept] " << e.what() << std::endl;
@@ -200,7 +200,7 @@ void Connection::parseProxyIdentification(const boost::system::error_code& error
 
 		// Wait to the next packet
 		boost::asio::async_read(socket,
-		                        boost::asio::buffer(msg.getBuffer(), NetworkMessage::HEADER_LENGTH),
+		                        boost::asio::buffer(msg.getBuffer(), CanaryLib::HEADER_LENGTH),
 		                        std::bind(&Connection::parseHeader, shared_from_this(), std::placeholders::_1));
 	} catch (boost::system::system_error& e) {
 		std::cout << "[Network error - Connection::parseProxyIdentification] " << e.what() << std::endl;
@@ -232,7 +232,7 @@ void Connection::parseHeader(const boost::system::error_code& error)
 		packetsSent = 0;
 	}
 
-	uint16_t size = msg.getLengthHeader();
+	uint16_t size = msg.getHeaderSize();
 	if (size == 0 || size > INPUTMESSAGE_MAXSIZE) {
 		close(FORCE_CLOSE);
 		return;
@@ -243,9 +243,9 @@ void Connection::parseHeader(const boost::system::error_code& error)
 		readTimer.async_wait(std::bind(&Connection::handleTimeout, std::weak_ptr<Connection>(shared_from_this()), std::placeholders::_1));
 
 		// Read packet content
-		msg.setLength(size + NetworkMessage::HEADER_LENGTH);
+		msg.setLength(size + CanaryLib::HEADER_LENGTH);
 		boost::asio::async_read(socket,
-								boost::asio::buffer(msg.getBodyBuffer(), size),
+								boost::asio::buffer(msg.getBody(), size),
 		                        std::bind(&Connection::parsePacket, shared_from_this(), std::placeholders::_1));
 	} catch (boost::system::system_error& e) {
 		std::cout << "[Network error - Connection::parseHeader] " << e.what() << std::endl;
@@ -273,17 +273,17 @@ void Connection::parsePacket(const boost::system::error_code& error)
 		if (!protocol) {
 			//Check packet checksum
 			uint32_t checksum;
-			int32_t len = msg.getLength() - msg.getBufferPosition() - NetworkMessage::CHECKSUM_LENGTH;
+			int32_t len = msg.getLength() - msg.getBufferPosition() - CanaryLib::CHECKSUM_LENGTH;
 			if (len > 0) {
-				checksum = adlerChecksum(msg.getBuffer() + msg.getBufferPosition() + NetworkMessage::CHECKSUM_LENGTH, len);
+				checksum = adlerChecksum(msg.getBuffer() + msg.getBufferPosition() + CanaryLib::CHECKSUM_LENGTH, len);
 			} else {
 				checksum = 0;
 			}
 
-			uint32_t recvChecksum = msg.get<uint32_t>();
+			uint32_t recvChecksum = msg.read<uint32_t>();
 			if (recvChecksum != checksum) {
 				// it might not have been the checksum, step back
-				msg.skipBytes(-NetworkMessage::CHECKSUM_LENGTH);
+				msg.skip(-CanaryLib::CHECKSUM_LENGTH);
 			}
 
 			// Game protocol has already been created at this point
@@ -295,8 +295,8 @@ void Connection::parsePacket(const boost::system::error_code& error)
 		} else {
 			// It is rather hard to detect if we have checksum or sequence method here so let's skip checksum check
 			// it doesn't generate any problem because olders protocol don't use 'server sends first' feature
-			msg.get<uint32_t>();
-			msg.skipBytes(1);    // Skip protocol ID
+			msg.read<uint32_t>();
+			msg.skip(1);    // Skip protocol ID
 		}
 
 		protocol->onRecvFirstMessage(msg);
@@ -310,7 +310,7 @@ void Connection::parsePacket(const boost::system::error_code& error)
 
 		if (!skipReadingNextPacket) {
 			// Wait to the next packet
-			boost::asio::async_read(socket, boost::asio::buffer(msg.getBuffer(), NetworkMessage::HEADER_LENGTH), std::bind(&Connection::parseHeader, shared_from_this(), std::placeholders::_1));
+			boost::asio::async_read(socket, boost::asio::buffer(msg.getBuffer(), CanaryLib::HEADER_LENGTH), std::bind(&Connection::parseHeader, shared_from_this(), std::placeholders::_1));
 		}
 	} catch (boost::system::system_error& e) {
 		std::cout << "[Network error - Connection::parsePacket] " << e.what() << std::endl;
@@ -324,7 +324,7 @@ void Connection::resumeWork()
 
 	try {
 		// Wait to the next packet
-		boost::asio::async_read(socket, boost::asio::buffer(msg.getBuffer(), NetworkMessage::HEADER_LENGTH), std::bind(&Connection::parseHeader, shared_from_this(), std::placeholders::_1));
+		boost::asio::async_read(socket, boost::asio::buffer(msg.getBuffer(), CanaryLib::HEADER_LENGTH), std::bind(&Connection::parseHeader, shared_from_this(), std::placeholders::_1));
 	} catch (boost::system::system_error& e) {
 		std::cout << "[Network error - Connection::parsePacket] " << e.what() << std::endl;
 		close(FORCE_CLOSE);

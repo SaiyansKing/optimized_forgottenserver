@@ -5776,7 +5776,7 @@ int LuaScriptInterface::luaNetworkMessageGetByte(lua_State* L)
 	// networkMessage:getByte()
 	NetworkMessage* message = getUserdata<NetworkMessage>(L, 1);
 	if (message) {
-		lua_pushnumber(L, message->getByte());
+		lua_pushnumber(L, message->readByte());
 	} else {
 		lua_pushnil(L);
 	}
@@ -5788,7 +5788,7 @@ int LuaScriptInterface::luaNetworkMessageGetU16(lua_State* L)
 	// networkMessage:getU16()
 	NetworkMessage* message = getUserdata<NetworkMessage>(L, 1);
 	if (message) {
-		lua_pushnumber(L, message->get<uint16_t>());
+		lua_pushnumber(L, message->read<uint16_t>());
 	} else {
 		lua_pushnil(L);
 	}
@@ -5800,7 +5800,7 @@ int LuaScriptInterface::luaNetworkMessageGetU32(lua_State* L)
 	// networkMessage:getU32()
 	NetworkMessage* message = getUserdata<NetworkMessage>(L, 1);
 	if (message) {
-		lua_pushnumber(L, message->get<uint32_t>());
+		lua_pushnumber(L, message->read<uint32_t>());
 	} else {
 		lua_pushnil(L);
 	}
@@ -5812,7 +5812,7 @@ int LuaScriptInterface::luaNetworkMessageGetU64(lua_State* L)
 	// networkMessage:getU64()
 	NetworkMessage* message = getUserdata<NetworkMessage>(L, 1);
 	if (message) {
-		lua_pushnumber(L, message->get<uint64_t>());
+		lua_pushnumber(L, message->read<uint64_t>());
 	} else {
 		lua_pushnil(L);
 	}
@@ -5824,7 +5824,7 @@ int LuaScriptInterface::luaNetworkMessageGetString(lua_State* L)
 	// networkMessage:getString()
 	NetworkMessage* message = getUserdata<NetworkMessage>(L, 1);
 	if (message) {
-		pushString(L, message->getString());
+		pushString(L, message->readString());
 	} else {
 		lua_pushnil(L);
 	}
@@ -5849,7 +5849,7 @@ int LuaScriptInterface::luaNetworkMessageAddByte(lua_State* L)
 	uint8_t number = getNumber<uint8_t>(L, 2);
 	NetworkMessage* message = getUserdata<NetworkMessage>(L, 1);
 	if (message) {
-		message->addByte(number);
+		message->writeByte(number);
 		pushBoolean(L, true);
 	} else {
 		lua_pushnil(L);
@@ -5863,7 +5863,7 @@ int LuaScriptInterface::luaNetworkMessageAddU16(lua_State* L)
 	uint16_t number = getNumber<uint16_t>(L, 2);
 	NetworkMessage* message = getUserdata<NetworkMessage>(L, 1);
 	if (message) {
-		message->add<uint16_t>(number);
+		message->write<uint16_t>(number);
 		pushBoolean(L, true);
 	} else {
 		lua_pushnil(L);
@@ -5877,7 +5877,7 @@ int LuaScriptInterface::luaNetworkMessageAddU32(lua_State* L)
 	uint32_t number = getNumber<uint32_t>(L, 2);
 	NetworkMessage* message = getUserdata<NetworkMessage>(L, 1);
 	if (message) {
-		message->add<uint32_t>(number);
+		message->write<uint32_t>(number);
 		pushBoolean(L, true);
 	} else {
 		lua_pushnil(L);
@@ -5891,7 +5891,7 @@ int LuaScriptInterface::luaNetworkMessageAddU64(lua_State* L)
 	uint64_t number = getNumber<uint64_t>(L, 2);
 	NetworkMessage* message = getUserdata<NetworkMessage>(L, 1);
 	if (message) {
-		message->add<uint64_t>(number);
+		message->write<uint64_t>(number);
 		pushBoolean(L, true);
 	} else {
 		lua_pushnil(L);
@@ -5905,7 +5905,7 @@ int LuaScriptInterface::luaNetworkMessageAddString(lua_State* L)
 	const std::string& string = getString(L, 2);
 	NetworkMessage* message = getUserdata<NetworkMessage>(L, 1);
 	if (message) {
-		message->addString(string);
+		message->writeString(string);
 		pushBoolean(L, true);
 	} else {
 		lua_pushnil(L);
@@ -5985,7 +5985,7 @@ int LuaScriptInterface::luaNetworkMessageSkipBytes(lua_State* L)
 	int16_t number = getNumber<int16_t>(L, 2);
 	NetworkMessage* message = getUserdata<NetworkMessage>(L, 1);
 	if (message) {
-		message->skipBytes(number);
+		message->skip(number);
 		pushBoolean(L, true);
 	} else {
 		lua_pushnil(L);

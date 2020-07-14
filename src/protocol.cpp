@@ -63,7 +63,7 @@ void Protocol::onSendMessage(const OutputMessage_ptr& msg)
 bool Protocol::onRecvMessage(NetworkMessage& msg)
 {
 	if (checksumMethod != CHECKSUM_METHOD_NONE) {
-		uint32_t recvChecksum = msg.get<uint32_t>();
+		uint32_t recvChecksum = msg.read<uint32_t>();
 		if (checksumMethod == CHECKSUM_METHOD_SEQUENCE) {
 			if (recvChecksum == 0) {
 				// checksum 0 indicate that the packet should be connection ping - 0x1C packet header
@@ -119,7 +119,7 @@ OutputMessage_ptr Protocol::getOutputBuffer(int32_t size)
 	//dispatcher thread
 	if (!outputBuffer) {
 		outputBuffer = OutputMessagePool::getOutputMessage();
-	} else if ((outputBuffer->getLength() + size) > NetworkMessage::MAX_PROTOCOL_BODY_LENGTH) {
+	} else if ((outputBuffer->getLength() + size) > CanaryLib::MAX_PROTOCOL_BODY_LENGTH) {
 		send(outputBuffer);
 		outputBuffer = OutputMessagePool::getOutputMessage();
 	}
@@ -133,7 +133,7 @@ void Protocol::XTEA_encrypt(OutputMessage& msg) const
 	// The message must be a multiple of 8
 	size_t paddingBytes = msg.getLength() & 7;
 	if (paddingBytes != 0) {
-		msg.addPaddingBytes(8 - paddingBytes);
+		msg.writePaddingBytes(8 - paddingBytes);
 	}
 
 	uint8_t* buffer = msg.getOutputBuffer();
@@ -478,7 +478,7 @@ bool Protocol::XTEA_decrypt(NetworkMessage& msg) const
 		readPos += 8;
 	}
 
-	uint16_t innerLength = msg.get<uint16_t>();
+	uint16_t innerLength = msg.read<uint16_t>();
 	if (innerLength > msgLength - 2) {
 		return false;
 	}
@@ -494,7 +494,7 @@ bool Protocol::RSA_decrypt(NetworkMessage& msg)
 	}
 
 	g_RSA().decrypt(reinterpret_cast<char*>(msg.getBuffer()) + msg.getBufferPosition()); //does not break strict aliasing
-	return (msg.getByte() == 0);
+	return (msg.readByte() == 0);
 }
 
 uint32_t Protocol::getIP() const
@@ -545,6 +545,6 @@ bool Protocol::compression(OutputMessage& msg)
 	}
 
 	msg.reset();
-	msg.addBytes(reinterpret_cast<const char*>(defBuffer), static_cast<size_t>(totalSize));
+	msg.write(reinterpret_cast<const char*>(defBuffer), static_cast<size_t>(totalSize));
 	return true;
 }

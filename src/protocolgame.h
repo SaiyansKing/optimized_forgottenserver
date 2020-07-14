@@ -91,7 +91,7 @@ class ProtocolGame final : public Protocol
 		}
 		void connect(uint32_t playerId, OperatingSystem_t operatingSystem, OperatingSystem_t tfcOperatingSystem);
 		void disconnectClient(const std::string& message) const;
-		void writeToOutputBuffer(const NetworkMessage& msg);
+		void writeToOutputBuffer(NetworkMessage& msg);
 
 		void release() override;
 

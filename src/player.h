@@ -1310,7 +1310,7 @@ class Player final : public Creature, public Cylinder
 				client->sendFightModes();
 			}
 		}
-		void sendNetworkMessage(const NetworkMessage& message) {
+		void sendNetworkMessage(NetworkMessage& message) {
 			if (client) {
 				client->writeToOutputBuffer(message);
 			}

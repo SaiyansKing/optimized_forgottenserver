@@ -126,7 +126,7 @@ target_include_directories(canary_server_lib SYSTEM
 target_link_libraries(canary_server_lib
                         PUBLIC
                           Boost::boost Threads::Threads mariadbclient
-                          spdlog::spdlog
+                          canary_lib::common_lib
                         PRIVATE
                           ZLIB::ZLIB pugixml::pugixml ${GMP_LIBRARIES}
                           Boost::system Boost::filesystem Boost::iostreams
@@ -162,7 +162,7 @@ add_executable(canary
 # *****************************************************************************
 # canary build options
 # *****************************************************************************
-target_link_libraries(canary PRIVATE canary_lib::server_lib canary_lib::common_lib)
+target_link_libraries(canary PRIVATE canary_lib::server_lib)
 set_target_properties(canary
     PROPERTIES
       RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
