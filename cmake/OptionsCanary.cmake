@@ -92,6 +92,7 @@ option(OPTIONS_ENABLE_UNIT_TEST
 if(OPTIONS_ENABLE_UNIT_TEST)
   log_option_enabled("[Canary] unit-test")
   enable_testing()
+  add_subdirectory(../canary-lib/tests lib-tests)
   add_subdirectory(../tests tests)
   target_compile_definitions(common_project_options INTERFACE UNIT_TESTING=1)
 else()
