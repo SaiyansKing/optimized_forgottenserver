@@ -149,25 +149,27 @@ Item* Item::CreateItem_legacy(PropStream& propStream)
 Item::Item(const uint16_t type, uint16_t count /*= 0*/) :
 	id(type)
 {
-	const ItemType& it = items[id];
+  if (items.size() > 0) {
+    const ItemType& it = items[id];
 
-	if (it.isFluidContainer() || it.isSplash()) {
-		setFluidType(count);
-	} else if (it.stackable) {
-		if (count != 0) {
-			setItemCount(count);
-		} else if (it.charges != 0) {
-			setItemCount(it.charges);
-		}
-	} else if (it.charges != 0) {
-		if (count != 0) {
-			setCharges(count);
-		} else {
-			setCharges(it.charges);
-		}
-	}
+    if (it.isFluidContainer() || it.isSplash()) {
+      setFluidType(count);
+    } else if (it.stackable) {
+      if (count != 0) {
+        setItemCount(count);
+      } else if (it.charges != 0) {
+        setItemCount(it.charges);
+      }
+    } else if (it.charges != 0) {
+      if (count != 0) {
+        setCharges(count);
+      } else {
+        setCharges(it.charges);
+      }
+    }
 
-	setDefaultDuration();
+    setDefaultDuration();
+  }
 }
 
 Item::Item(const Item& i) :
@@ -1004,7 +1006,7 @@ std::vector<std::pair<std::string, std::string>> Item::getDescriptions(const Ite
 					uint32_t days = duration / 86400;
 					uint32_t hours = (duration % 86400) / 3600;
 					str.append(std::to_string(days)).append(" day").append(days != 1 ? "s" : "");
-					
+
 					if (hours > 0) {
 						str.append(" and ").append(std::to_string(hours)).append(" hour").append(hours != 1 ? "s" : "");
 					}
@@ -1012,7 +1014,7 @@ std::vector<std::pair<std::string, std::string>> Item::getDescriptions(const Ite
 					uint32_t hours = duration / 3600;
 					uint32_t minutes = (duration % 3600) / 60;
 					str.append(std::to_string(hours)).append(" hour").append(hours != 1 ? "s" : "");
-					
+
 					if (minutes > 0) {
 						str.append(" and ").append(std::to_string(minutes)).append(" minute").append(minutes != 1 ? "s" : "");
 					}
@@ -1020,7 +1022,7 @@ std::vector<std::pair<std::string, std::string>> Item::getDescriptions(const Ite
 					uint32_t minutes = duration / 60;
 					uint32_t seconds = duration % 60;
 					str.append(std::to_string(minutes)).append(" minute").append(minutes != 1 ? "s" : "");
-					
+
 					if (seconds > 0) {
 						str.append(" and ").append(std::to_string(seconds)).append(" second").append(seconds != 1 ? "s" : "");
 					}

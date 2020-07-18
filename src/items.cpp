@@ -442,7 +442,7 @@ bool Items::loadFromOtbLegacy(OTB::Loader& loader, const OTB::Node& rootNode)
 			default: return CONST_ANI_NONE;
 		}
 	};
-	
+
 	auto translateOTBSlot = [](slotsOTB_t st) {
 		switch(st)
 		{
@@ -465,7 +465,7 @@ bool Items::loadFromOtbLegacy(OTB::Loader& loader, const OTB::Node& rootNode)
 		if (!loader.getProps(itemNode, stream)) {
 			return false;
 		}
-		
+
 		uint32_t flags;
 		if (!stream.read<uint32_t>(flags)) {
 			return false;
@@ -589,7 +589,7 @@ bool Items::loadFromOtbLegacy(OTB::Loader& loader, const OTB::Node& rootNode)
 					if (!stream.read(wb)) {
 						return false;
 					}
-					
+
 					iType.weaponType = static_cast<WeaponType_t>(wb.weaponType);
 					iType.shootType = translateOTBSubfight(static_cast<subfightOTB_t>(wb.shootType));
 					iType.ammoType = static_cast<Ammo_t>(wb.ammoType);
@@ -680,7 +680,7 @@ bool Items::loadFromOtbLegacy(OTB::Loader& loader, const OTB::Node& rootNode)
 					if (!stream.read(db)) {
 						return false;
 					}
-					
+
 					iType.decayTime = static_cast<uint32_t>(db.decayTime);
 					iType.decayTo = static_cast<int32_t>(db.decayTo);
 					break;
@@ -698,7 +698,7 @@ bool Items::loadFromOtbLegacy(OTB::Loader& loader, const OTB::Node& rootNode)
 					}
 					break;
 				}
-				
+
 				case ITEM_ATTR_LIGHT: {
 					if (datalen != sizeof(lightBlock)) {
 						return false;
@@ -738,7 +738,7 @@ bool Items::loadFromOtbLegacy(OTB::Loader& loader, const OTB::Node& rootNode)
 					if (!stream.read(wb2)) {
 						return false;
 					}
-					
+
 					iType.weaponType = static_cast<WeaponType_t>(wb2.weaponType);
 					iType.shootType = translateOTBSubfight(static_cast<subfightOTB_t>(wb2.shootType));
 					iType.ammoType = static_cast<Ammo_t>(wb2.ammoType);
@@ -883,7 +883,7 @@ bool Items::loadFromOtbLegacy(OTB::Loader& loader, const OTB::Node& rootNode)
 			default:
 				return false;
 		}
-								
+
 		iType.blockSolid = hasBitSet(FLAG_BLOCK_SOLID, flags);
 		iType.blockProjectile = hasBitSet(FLAG_BLOCK_PROJECTILE, flags);
 		iType.blockPathFind = hasBitSet(FLAG_BLOCK_PATHFIND, flags);
@@ -1877,12 +1877,12 @@ ItemType& Items::getItemType(size_t id)
 	return items.front();
 }
 
-const ItemType& Items::getItemType(size_t id) const
-{
-	if (id < items.size()) {
-		return items[id];
-	}
-	return items.front();
+const ItemType& Items::getItemType(size_t id) const {
+  if (id < items.size()) {
+    return items[id];
+  }
+
+  return items.front();
 }
 
 const ItemType& Items::getItemIdByClientId(uint16_t spriteId) const

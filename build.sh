@@ -19,7 +19,7 @@ while getopts "rteh" opt; do
 done
 
 cd build
-sudo cmake -DOPTIONS_ENABLE_UNIT_TEST=${TESTS} -DCMAKE_BUILD_TYPE=${TYPE} .. ; make
+cmake -DOPTIONS_ENABLE_UNIT_TEST=${TESTS} -DCMAKE_BUILD_TYPE=${TYPE} .. ; make -j`nproc`
 cd ..
 rm -rf canary
 cp build/bin/canary ./

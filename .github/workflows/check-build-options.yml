@@ -1,0 +1,56 @@
+name: Check Build Options
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+      - v*
+
+    tags:
+      - v*
+
+  pull_request:
+    paths:
+      - cmake/**
+      - src/**
+      - CMakeLists.txt
+      - .github/**
+
+
+jobs:
+  job:
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }}-${{ matrix.buildtype }}-debug_log_${{ matrix.options_enable_debug_log }}-doxygen_${{ matrix.options_enable_doxygen }}-ldoc_${{ matrix.options_enable_ldoc }}-unit_test_${{ matrix.options_enable_unit_test }}-openmp_${{ matrix.options_enable_openmp }}-warnings_flags_${{ matrix.options_warnings_flags }}
+    strategy:
+      matrix:
+        os                        : [ubuntu-18.04, ubuntu-20.04]
+        buildtype                 : [RelWithDebInfo]
+        options_enable_debug_log  : [OFF, ON]
+        options_enable_doxygen    : [OFF, ON]
+        options_enable_ldoc       : [OFF, ON]
+        options_enable_openmp     : [OFF, ON]
+        options_warnings_flags    : [OFF, ON]
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+
+    - name: Install Dependencies
+      run: >
+        sudo apt-get update && sudo apt-get install cmake build-essential
+        liblua5.2-dev libmysqlclient-dev libboost-system-dev
+        libboost-iostreams-dev libboost-filesystem-dev libpugixml-dev
+        libboost-date-time-dev libgmp-dev zip lua-ldoc doxygen
+
+    - name: Prepare build Environment
+      run: |
+        mkdir build && cd build
+        cmake -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} -DOPTIONS_ENABLE_DEBUG_LOG=${{matrix.options_enable_debug_log}} -DOPTIONS_ENABLE_DOXYGEN=${{matrix.options_enable_doxygen}} -DOPTIONS_ENABLE_LDOC=${{matrix.options_enable_ldoc}} -DOPTIONS_ENABLE_OPENMP=${{matrix.options_enable_openmp}} -DOPTIONS_WARNINGS_FLAGS=${{matrix.options_warnings_flags}} ..
+
+    - name: Build
+      run: |
+        cd build
+        make -j `nproc`
+        mv bin/canary ../
