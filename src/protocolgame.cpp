@@ -283,13 +283,13 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 	msg.read<uint16_t>();
 	// if it's not OTC use SEQUENCE checksum
 	if (operatingSystem < CLIENTOS_OTCLIENT_LINUX) {
-		setChecksumMethod(CHECKSUM_METHOD_SEQUENCE);
+		setChecksumMethod(CanaryLib::CHECKSUM_METHOD_SEQUENCE);
 		if (TFCoperatingSystem < CLIENTOS_TFC_ANDROID) {
 			//compression on the forgotten client will be implemented in the next client update
 			enableCompression();
 		}
 	} else { // if it's OTC use ADLER32 checksum
-		setChecksumMethod(CHECKSUM_METHOD_ADLER32);
+		setChecksumMethod(CanaryLib::CHECKSUM_METHOD_ADLER32);
 	}
 
 	#if GAME_FEATURE_CLIENT_VERSION > 0
@@ -308,17 +308,15 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 	// }
 	#endif
 
-	#if GAME_FEATURE_RSA1024 > 0
-	if (!Protocol::RSA_decrypt(msg)) {
+	if (!msg.decryptRSA()) {
 		disconnect();
 		return;
 	}
-	#endif
 
-	#if GAME_FEATURE_XTEA > 0
-	uint32_t key[4] = {msg.read<uint32_t>(), msg.read<uint32_t>(), msg.read<uint32_t>(), msg.read<uint32_t>()};
-	enableXTEAEncryption();
-	setXTEAKey(key);
+  #if GAME_FEATURE_XTEA > 0
+    uint32_t key[4] = {msg.read<uint32_t>(), msg.read<uint32_t>(), msg.read<uint32_t>(), msg.read<uint32_t>()};
+    enableXTEAEncryption();
+    CanaryLib::XTEA().setKey(key);
 	#endif
 
 	if (operatingSystem >= (CLIENTOS_OTCLIENT_LINUX + CLIENTOS_OTCLIENT_LINUX)) {
@@ -433,7 +431,7 @@ void ProtocolGame::onConnect()
 
 	// Go back and write checksum
 	output->skip(-12);
-	output->write<uint32_t>(adlerChecksum(output->getOutputBuffer() + sizeof(uint32_t), 8));
+	output->write<uint32_t>(NetworkMessage::getChecksum(output->getOutputBuffer() + sizeof(uint32_t), 8));
 
 	send(output);
 }

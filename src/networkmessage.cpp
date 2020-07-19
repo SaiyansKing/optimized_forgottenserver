@@ -21,9 +21,6 @@
 
 #include "networkmessage.h"
 
-#include "container.h"
-#include "creature.h"
-
 Position NetworkMessage::getPosition()
 {
 	Position pos;

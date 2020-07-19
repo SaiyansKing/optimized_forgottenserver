@@ -76,8 +76,6 @@ std::string getCombatName(CombatType_t combatType);
 std::string getSpecialSkillName(uint8_t skillid);
 std::string getSkillName(uint8_t skillid);
 
-uint32_t adlerChecksum(const uint8_t* data, size_t length);
-
 std::string ucfirst(std::string str);
 std::string ucwords(std::string str);
 bool booleanString(const std::string& str);

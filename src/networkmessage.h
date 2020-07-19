@@ -21,12 +21,11 @@
 #define FS_NETWORKMESSAGE_H_B853CFED58D1413A87ACED07B2926E03
 
 #include "const.h"
+#include "item.h"
+#include "position.h"
 
 class Item;
-class Creature;
-class Player;
 struct Position;
-class RSA;
 
 class NetworkMessage : public CanaryLib::NetworkMessage
 {

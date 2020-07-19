@@ -23,10 +23,8 @@
 
 // Definitions should be global.
 #include "definitions.h"
-#include "stringExtend.h"
 
 #include "pugixml/src/pugixml.hpp"
-#include "simd.h"
 #include "features.h"
 
 // Canary Lib

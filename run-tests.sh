@@ -34,5 +34,5 @@ fi
 
 if [ ${TESTS} != "SERVER" ]; then
   ./canary_echo.sh "Running lib tests"
-  ./canary-lib/tests/canary-lib-tests $@
+  ./build/bin/canary-lib-tests  $@
 fi

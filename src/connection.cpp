@@ -275,7 +275,7 @@ void Connection::parsePacket(const boost::system::error_code& error)
 			uint32_t checksum;
 			int32_t len = msg.getLength() - msg.getBufferPosition() - CanaryLib::CHECKSUM_LENGTH;
 			if (len > 0) {
-				checksum = adlerChecksum(msg.getBuffer() + msg.getBufferPosition() + CanaryLib::CHECKSUM_LENGTH, len);
+				checksum = NetworkMessage::getChecksum(msg.getBuffer() + msg.getBufferPosition() + CanaryLib::CHECKSUM_LENGTH, len);
 			} else {
 				checksum = 0;
 			}

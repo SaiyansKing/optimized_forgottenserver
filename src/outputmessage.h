@@ -35,10 +35,6 @@ class OutputMessage : public NetworkMessage
 		OutputMessage(const OutputMessage&) = delete;
 		OutputMessage& operator=(const OutputMessage&) = delete;
 
-		uint8_t* getOutputBuffer() {
-			return m_buffer + outputBufferStart;
-		}
-
 		void writeMessageLength() {
 			add_header(m_info.m_messageSize);
 		}
@@ -64,18 +60,6 @@ class OutputMessage : public NetworkMessage
 			m_info.m_messageSize += msgLen;
 			m_info.m_bufferPos += msgLen;
 		}
-
-	private:
-		template <typename T>
-		void add_header(T add) {
-			assert(outputBufferStart >= sizeof(T));
-			outputBufferStart -= sizeof(T);
-			memcpy(m_buffer + outputBufferStart, &add, sizeof(T));
-			//added header size to the message size
-			m_info.m_messageSize += sizeof(T);
-		}
-
-		CanaryLib::MsgSize_t outputBufferStart = CanaryLib::MAX_HEADER_SIZE;
 };
 
 class OutputMessagePool

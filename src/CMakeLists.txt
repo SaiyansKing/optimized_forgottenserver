@@ -37,8 +37,6 @@ find_package(Threads REQUIRED)
 find_package(Boost 1.53.0 COMPONENTS system filesystem iostreams date_time REQUIRED)
 find_package(Lua REQUIRED)
 find_package(ZLIB REQUIRED)
-find_package(GMP REQUIRED)
-
 
 # *****************************************************************************
 # Create Library
@@ -298,7 +296,6 @@ target_sources(canary_server_lib
     ${CMAKE_CURRENT_LIST_DIR}/protocolstatus.cpp
     ${CMAKE_CURRENT_LIST_DIR}/quests.cpp
     ${CMAKE_CURRENT_LIST_DIR}/raids.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/rsa.cpp
     ${CMAKE_CURRENT_LIST_DIR}/scripts.cpp
     ${CMAKE_CURRENT_LIST_DIR}/server.cpp
     ${CMAKE_CURRENT_LIST_DIR}/signals.cpp
@@ -329,7 +326,6 @@ target_include_directories(canary_server_lib SYSTEM
                             ${LUA_INCLUDE_DIR}
                             ${CANARY_EXTERNAL_PATH}
                             ${CANARY_LIB_PATH}
-                            ${GMP_INCLUDE_DIR}
 )
 
 target_link_libraries(canary_server_lib
@@ -337,8 +333,8 @@ target_link_libraries(canary_server_lib
                           Boost::boost Threads::Threads mariadbclient
                           canary_lib::common_lib
                         PRIVATE
-                          ZLIB::ZLIB pugixml::pugixml ${GMP_LIBRARIES}
-                          Boost::system Boost::filesystem Boost::iostreams
+                          ZLIB::ZLIB pugixml::pugixml Boost::system 
+                          Boost::filesystem Boost::iostreams
                           Boost::date_time ${LUA_LIBRARIES}
                           ${PROJECT_WARNINGS_FLAGS}
 )

@@ -34,12 +34,6 @@ class Protocol : public std::enable_shared_from_this<Protocol>
 		Protocol(const Protocol&) = delete;
 		Protocol& operator=(const Protocol&) = delete;
 
-		enum ChecksumMethods_t : uint8_t {
-			CHECKSUM_METHOD_NONE,
-			CHECKSUM_METHOD_ADLER32,
-			CHECKSUM_METHOD_SEQUENCE
-		};
-
 		virtual void parsePacket(NetworkMessage&) {}
 
 		virtual void onSendMessage(const OutputMessage_ptr& msg);
@@ -79,15 +73,10 @@ class Protocol : public std::enable_shared_from_this<Protocol>
 		void enableXTEAEncryption() {
 			encryptionEnabled = true;
 		}
-		void setXTEAKey(const uint32_t* key) {
-			memcpy(this->key, key, sizeof(*key) * 4);
-		}
-		void setChecksumMethod(ChecksumMethods_t method) {
+		void setChecksumMethod(CanaryLib::ChecksumMethods_t method) {
 			checksumMethod = method;
 		}
 		void enableCompression();
-
-		static bool RSA_decrypt(NetworkMessage& msg);
 
 		void setRawMessages(bool value) {
 			rawMessages = value;
@@ -96,8 +85,6 @@ class Protocol : public std::enable_shared_from_this<Protocol>
 		virtual void release() {}
 
 	private:
-		void XTEA_encrypt(OutputMessage& msg) const;
-		bool XTEA_decrypt(NetworkMessage& msg) const;
 		bool compression(OutputMessage& msg);
 
 		friend class Connection;
@@ -109,9 +96,9 @@ class Protocol : public std::enable_shared_from_this<Protocol>
 		uint32_t key[4] = {};
 		uint32_t serverSequenceNumber = 0;
 		uint32_t clientSequenceNumber = 0;
-		std::underlying_type<ChecksumMethods_t>::type checksumMethod = CHECKSUM_METHOD_NONE;
+		std::underlying_type<CanaryLib::ChecksumMethods_t>::type checksumMethod = CanaryLib::CHECKSUM_METHOD_NONE;
 		bool encryptionEnabled = false;
-		bool rawMessages = false;
+    bool rawMessages = false;
 		bool compreesionEnabled = false;
 };
 

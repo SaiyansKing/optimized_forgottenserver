@@ -64,7 +64,6 @@
 #include "../../src/protocolstatus.h"
 #include "../../src/quests.h"
 #include "../../src/raids.h"
-#include "../../src/rsa.h"
 #include "../../src/scripts.h"
 #include "../../src/server.h"
 #include "../../src/signals.h"

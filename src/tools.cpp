@@ -1199,57 +1199,6 @@ std::string getSkillName(uint8_t skillid)
 	}
 }
 
-uint32_t adlerChecksum(const uint8_t* data, size_t length)
-{
-	if (length > CanaryLib::NETWORKMESSAGE_MAXSIZE) {
-		return 0;
-	}
-
-	const uint16_t adler = 65521;
-	#if defined(__SSE2__)
-	const __m128i h16 = _mm_setr_epi16(16, 15, 14, 13, 12, 11, 10, 9);
-	const __m128i h8 = _mm_setr_epi16(8, 7, 6, 5, 4, 3, 2, 1);
-	const __m128i zeros = _mm_setzero_si128();
-	#endif
-
-	uint32_t a = 1, b = 0;
-
-	while (length > 0) {
-		size_t tmp = length > 5552 ? 5552 : length;
-		length -= tmp;
-
-		#if defined(__SSE2__)
-		while (tmp >= 16) {
-			__m128i vdata = _mm_loadu_si128(reinterpret_cast<const __m128i*>(data));
-			__m128i v = _mm_sad_epu8(vdata, zeros);
-			__m128i v32 = _mm_add_epi32(_mm_madd_epi16(_mm_unpacklo_epi8(vdata, zeros), h16), _mm_madd_epi16(_mm_unpackhi_epi8(vdata, zeros), h8));
-			v32 = _mm_add_epi32(v32, _mm_shuffle_epi32(v32, _MM_SHUFFLE(2, 3, 0, 1)));
-			v32 = _mm_add_epi32(v32, _mm_shuffle_epi32(v32, _MM_SHUFFLE(0, 1, 2, 3)));
-			v = _mm_add_epi32(v, _mm_shuffle_epi32(v, _MM_SHUFFLE(1, 0, 3, 2)));
-			b += (a << 4) + _mm_cvtsi128_si32(v32);
-			a += _mm_cvtsi128_si32(v);
-
-			data += 16;
-			tmp -= 16;
-		}
-
-		while (tmp--) {
-			a += *data++; b += a;
-		}
-		#else
-		do {
-			a += *data++;
-			b += a;
-		} while (--tmp);
-		#endif
-
-		a %= adler;
-		b %= adler;
-	}
-
-	return (b << 16) | a;
-}
-
 std::string ucfirst(std::string str)
 {
 	for (char& i : str) {

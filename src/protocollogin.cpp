@@ -196,16 +196,16 @@ void ProtocolLogin::onRecvFirstMessage(NetworkMessage& msg)
 	 * 1 byte: preview world(971+)
 	 */
 
-	if (!Protocol::RSA_decrypt(msg)) {
+	if (!msg.decryptRSA()) {
 		disconnect();
 		return;
 	}
 
 	uint32_t key[4] = {msg.read<uint32_t>(), msg.read<uint32_t>(), msg.read<uint32_t>(), msg.read<uint32_t>()};
 	enableXTEAEncryption();
-	setXTEAKey(key);
+  CanaryLib::XTEA().setKey(key);
 
-	setChecksumMethod(CHECKSUM_METHOD_ADLER32);
+	setChecksumMethod(CanaryLib::CHECKSUM_METHOD_ADLER32);
 
 	if (g_game().getGameState() == GAME_STATE_STARTUP) {
 		disconnectClient("Gameworld is starting up. Please wait.");
@@ -236,7 +236,7 @@ void ProtocolLogin::onRecvFirstMessage(NetworkMessage& msg)
 	#if GAME_FEATURE_SESSIONKEY > 0
 	// read authenticator token and stay logged in flag from last 128 bytes
 	msg.skip((msg.getLength() - 128) - msg.getBufferPosition());
-	if (!Protocol::RSA_decrypt(msg)) {
+	if (!msg.decryptRSA()) {
 		disconnectClient("Invalid authentification token.");
 		return;
 	}
