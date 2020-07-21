@@ -308,7 +308,7 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 	// }
 	#endif
 
-	if (!msg.decryptRSA()) {
+	if (!decryptRSA(msg)) {
 		disconnect();
 		return;
 	}

@@ -17,27 +17,35 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef FS_NETWORKMESSAGE_H_B853CFED58D1413A87ACED07B2926E03
-#define FS_NETWORKMESSAGE_H_B853CFED58D1413A87ACED07B2926E03
+#ifndef FS_RSA_H_C4E277DA8E884B578DDBF0566F504E91
+#define FS_RSA_H_C4E277DA8E884B578DDBF0566F504E91
 
-#include "const.h"
-#include "item.h"
-#include "position.h"
-#include "rsa.h"
+#include <gmp.h>
 
-class Item;
-struct Position;
-
-class NetworkMessage : public CanaryLib::NetworkMessage
+class RSA
 {
 	public:
-		NetworkMessage() = default;
+		RSA();
+		~RSA();
 
-		// TODO: migrate that to lib in a generic way. needs to update client too.
-		Position getPosition();
-		void addDouble(double value, uint8_t precision = 2);
-		void addItemId(uint16_t itemId);
-		void addPosition(const Position& pos);
+		// Singleton - ensures we don't accidentally copy it
+		RSA(const RSA&) = delete;
+		RSA& operator=(const RSA&) = delete;
+
+		static RSA& getInstance() {
+			static RSA instance; // Guaranteed to be destroyed.
+														// Instantiated on first use.
+			return instance;
+		}
+
+		void queryNanD(const char* pString, const char* qString);
+		void setKey(const char* nString, const char* dString);
+		void decrypt(char* msg) const;
+
+	private:
+		mpz_t n, d;
 };
 
-#endif // #ifndef __NETWORK_MESSAGE_H__
+constexpr auto g_RSA = &RSA::getInstance;
+
+#endif

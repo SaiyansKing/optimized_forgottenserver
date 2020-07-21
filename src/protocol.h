@@ -77,6 +77,7 @@ class Protocol : public std::enable_shared_from_this<Protocol>
 			checksumMethod = method;
 		}
 		void enableCompression();
+		static bool decryptRSA(NetworkMessage& msg);
 
 		void setRawMessages(bool value) {
 			rawMessages = value;
