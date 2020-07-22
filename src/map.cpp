@@ -1141,9 +1141,12 @@ bool Map::getPathMatchingCond(const Creature& creature, const Position& targetPo
 AStarNodes::AStarNodes(uint32_t x, uint32_t y, int_fast32_t extraCost): nodes(), openNodes()
 {
 	#if defined(__SSE2__)
-	uint32_t defaultCost = std::numeric_limits<int32_t>::max();
-	for (int32_t i = 0; i < 512; ++i) {
-		memcpy(&calculatedNodes[i], &defaultCost, sizeof(calculatedNodes[0]));
+	__m128i defaultCost = _mm_set1_epi32(std::numeric_limits<int32_t>::max());
+	for (int32_t i = 0; i < MAX_NODES; i += 16) {
+		_mm_store_si128(reinterpret_cast<__m128i*>(&calculatedNodes[i + 0]), defaultCost);
+		_mm_store_si128(reinterpret_cast<__m128i*>(&calculatedNodes[i + 4]), defaultCost);
+		_mm_store_si128(reinterpret_cast<__m128i*>(&calculatedNodes[i + 8]), defaultCost);
+		_mm_store_si128(reinterpret_cast<__m128i*>(&calculatedNodes[i + 12]), defaultCost);
 	}
 	#endif
 
@@ -1227,18 +1230,14 @@ AStarNode* AStarNodes::getBestNode()
 		minvalues = _mm256_min_epi32(values, minvalues);
 	}
 
-	alignas(32) int32_t values_array[8];
+	__m256i res = _mm256_min_epi32(minvalues, _mm256_shuffle_epi32(minvalues, _MM_SHUFFLE(2, 3, 0, 1))); //Calculate horizontal minimum
+	res = _mm256_min_epi32(res, _mm256_shuffle_epi32(res, _MM_SHUFFLE(0, 1, 2, 3))); //Calculate horizontal minimum
+	res = _mm256_min_epi32(res, _mm256_permutevar8x32_epi32(res, _mm256_set_epi32(0, 1, 2, 3, 4, 5, 6, 7))); //Calculate horizontal minimum
+  
 	alignas(32) int32_t indices_array[8];
-	_mm256_store_si256(reinterpret_cast<__m256i*>(values_array), minvalues);
 	_mm256_store_si256(reinterpret_cast<__m256i*>(indices_array), minindices);
 
-	int32_t best_node = indices_array[0];
-	int32_t best_node_f = values_array[0];
-	for (int32_t i = 1; i < 8; ++i) {
-		int32_t total_cost = values_array[i];
-		best_node = (total_cost < best_node_f ? indices_array[i] : best_node);
-		best_node_f = (total_cost < best_node_f ? total_cost : best_node_f);
-	}
+	int32_t best_node = indices_array[(_mm_ctz(_mm256_movemask_epi8(_mm256_cmpeq_epi32(minvalues, res))) >> 2)];
 	return (openNodes[best_node] ? &nodes[best_node] : NULL);
 	#elif defined(__SSE4_1__)
 	const __m128i increment = _mm_set1_epi32(4);
@@ -1252,18 +1251,13 @@ AStarNode* AStarNodes::getBestNode()
 		minvalues = _mm_min_epi32(values, minvalues);
 	}
 
-	alignas(16) int32_t values_array[4];
+	__m128i res = _mm_min_epi32(minvalues, _mm_shuffle_epi32(minvalues, _MM_SHUFFLE(2, 3, 0, 1))); //Calculate horizontal minimum
+	res = _mm_min_epi32(res, _mm_shuffle_epi32(res, _MM_SHUFFLE(0, 1, 2, 3))); //Calculate horizontal minimum
+
 	alignas(16) int32_t indices_array[4];
-	_mm_store_si128(reinterpret_cast<__m128i*>(values_array), minvalues);
 	_mm_store_si128(reinterpret_cast<__m128i*>(indices_array), minindices);
 
-	int32_t best_node = indices_array[0];
-	int32_t best_node_f = values_array[0];
-	for (int32_t i = 1; i < 4; ++i) {
-		int32_t total_cost = values_array[i];
-		best_node = (total_cost < best_node_f ? indices_array[i] : best_node);
-		best_node_f = (total_cost < best_node_f ? total_cost : best_node_f);
-	}
+	int32_t best_node = indices_array[(_mm_ctz(_mm_movemask_epi8(_mm_cmpeq_epi32(minvalues, res))) >> 2)];
 	return (openNodes[best_node] ? &nodes[best_node] : NULL);
 	#elif defined(__SSE2__)
 	auto _mm_sse2_min_epi32 = [](const __m128i a, const __m128i b) {
@@ -1287,18 +1281,13 @@ AStarNode* AStarNodes::getBestNode()
 		minvalues = _mm_sse2_min_epi32(values, minvalues);
 	}
 
-	alignas(16) int32_t values_array[4];
+	__m128i res = _mm_sse2_min_epi32(minvalues, _mm_shuffle_epi32(minvalues, _MM_SHUFFLE(2, 3, 0, 1))); //Calculate horizontal minimum
+	res = _mm_sse2_min_epi32(res, _mm_shuffle_epi32(res, _MM_SHUFFLE(0, 1, 2, 3))); //Calculate horizontal minimum
+
 	alignas(16) int32_t indices_array[4];
-	_mm_store_si128(reinterpret_cast<__m128i*>(values_array), minvalues);
 	_mm_store_si128(reinterpret_cast<__m128i*>(indices_array), minindices);
 
-	int32_t best_node = indices_array[0];
-	int32_t best_node_f = values_array[0];
-	for (int32_t i = 1; i < 4; ++i) {
-		int32_t total_cost = values_array[i];
-		best_node = (total_cost < best_node_f ? indices_array[i] : best_node);
-		best_node_f = (total_cost < best_node_f ? total_cost : best_node_f);
-	}
+	int32_t best_node = indices_array[(_mm_ctz(_mm_movemask_epi8(_mm_cmpeq_epi32(minvalues, res))) >> 2)];
 	return (openNodes[best_node] ? &nodes[best_node] : NULL);
 	#else
 	int32_t best_node_f = std::numeric_limits<int32_t>::max();
