@@ -278,7 +278,7 @@ MoveEvent* MoveEvents::getEvent(Item* item, MoveEvent_t eventType, slots_t slot)
 	auto it = itemIdMap.find(item->getID());
 	if (it != itemIdMap.end()) {
 		MoveEvent* moveEvent = it->second.moveEvent[eventType].get();
-		if ((moveEvent->getSlot() & slotp) != 0) {
+		if (moveEvent && (moveEvent->getSlot() & slotp) != 0) {
 			return moveEvent;
 		}
 	}
