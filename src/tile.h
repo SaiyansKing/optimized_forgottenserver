@@ -78,6 +78,25 @@ enum ZoneType_t {
 class SpectatorVector : public CreatureVector
 {
 	public:
+		SpectatorVector() = default;
+
+		inline CreatureVector::iterator begin() noexcept { return specs.begin(); }
+		inline CreatureVector::iterator end() noexcept { return specs.end(); }
+		inline CreatureVector::const_iterator begin() const noexcept { return specs.begin(); }
+		inline CreatureVector::const_iterator end() const noexcept { return specs.end(); }
+		inline bool empty() const noexcept { return specs.empty(); }
+		inline size_t size() const noexcept { return specs.size(); }
+		inline size_t capacity() const noexcept { return specs.capacity(); }
+		inline void clear() noexcept { specs.clear(); }
+		inline void reserve(size_t count) { specs.reserve(count); }
+		inline void push_back(CreatureVector::value_type element) { specs.push_back(element); }
+		inline void emplace_back(CreatureVector::value_type element) { specs.emplace_back(element); }
+		inline CreatureVector::reference operator[](size_t index) { return specs.operator[](index); }
+		inline CreatureVector::const_reference operator[](size_t index) const { return specs.operator[](index); }
+
+		template<class inputIterator>
+		inline void insert(CreatureVector::const_iterator it, inputIterator first, inputIterator last) { specs.insert(it, first, last); }
+
 		void mergeSpectators(const SpectatorVector& spectators) {
 			size_t it = 0, end = spectators.size();
 			while (it < end) {
@@ -85,14 +104,14 @@ class SpectatorVector : public CreatureVector
 
 				size_t cit = 0, cend = size();
 				while (cit < cend) {
-					if (operator[](cit) == spectator) {
+					if (specs[cit] == spectator) {
 						goto Skip_Duplicate;
 					} else {
 						++cit;
 					}
 				}
 
-				emplace_back(spectator);
+				specs.emplace_back(spectator);
 				Skip_Duplicate:
 				++it;
 			}
@@ -101,85 +120,81 @@ class SpectatorVector : public CreatureVector
 		void erase(Creature* spectator) {
 			size_t it = 0, end = size();
 			while (it < end) {
-				if (operator[](it) == spectator) {
-					std::swap(operator[](it), back());
-					pop_back();
+				if (specs[it] == spectator) {
+					specs[it] = specs.back();
+					specs.pop_back();
 					return;
 				} else {
 					++it;
 				}
 			}
 		}
+
+		//Allow implicit conversion to CreatureVector&
+		operator CreatureVector&() { return specs; }
+
+	private:
+		CreatureVector specs;
 };
 
 class TileItemVector : private ItemVector
 {
 	public:
-		using ItemVector::begin;
-		using ItemVector::end;
-		using ItemVector::rbegin;
-		using ItemVector::rend;
-		using ItemVector::size;
-		using ItemVector::clear;
-		using ItemVector::operator[];
-		using ItemVector::insert;
-		using ItemVector::erase;
-		using ItemVector::push_back;
-		using ItemVector::value_type;
-		using ItemVector::iterator;
-		using ItemVector::const_iterator;
-		using ItemVector::reverse_iterator;
-		using ItemVector::const_reverse_iterator;
+		TileItemVector() = default;
 
-		iterator getBeginDownItem() {
-			return begin() + topItemCount;
-		}
-		const_iterator getBeginDownItem() const {
-			return begin() + topItemCount;
-		}
-		iterator getEndDownItem() {
-			return end();
-		}
-		const_iterator getEndDownItem() const {
-			return end();
-		}
-		iterator getBeginTopItem() {
-			return begin();
-		}
-		const_iterator getBeginTopItem() const {
-			return begin();
-		}
-		iterator getEndTopItem() {
-			return getBeginDownItem();
-		}
-		const_iterator getEndTopItem() const {
-			return getBeginDownItem();
-		}
+		inline ItemVector::iterator begin() noexcept { return vec.begin(); }
+		inline ItemVector::iterator end() noexcept { return vec.end(); }
+		inline ItemVector::const_iterator begin() const noexcept { return vec.begin(); }
+		inline ItemVector::const_iterator end() const noexcept { return vec.end(); }
+		inline ItemVector::reverse_iterator rbegin() noexcept { return vec.rbegin(); }
+		inline ItemVector::reverse_iterator rend() noexcept { return vec.rend(); }
+		inline ItemVector::const_reverse_iterator rbegin() const noexcept { return vec.rbegin(); }
+		inline ItemVector::const_reverse_iterator rend() const noexcept { return vec.rend(); }
+		inline size_t size() const noexcept { return vec.size(); }
+		inline void clear() noexcept { vec.clear(); }
+		inline void push_back(ItemVector::value_type element) { vec.push_back(element); }
+		inline void emplace_back(ItemVector::value_type element) { vec.emplace_back(element); }
+		inline ItemVector::iterator erase(ItemVector::const_iterator it) { return vec.erase(it); }
+		inline ItemVector::iterator erase(ItemVector::const_iterator first, ItemVector::const_iterator last) { return vec.erase(first, last); }
+		inline ItemVector::reference operator[](size_t index) { return vec.operator[](index); }
+		inline ItemVector::const_reference operator[](size_t index) const { return vec.operator[](index); }
 
-		uint32_t getTopItemCount() const {
-			return topItemCount;
-		}
-		uint32_t getDownItemCount() const {
-			return size() - topItemCount;
-		}
-		inline Item* getTopTopItem() const {
+		template<class inputIterator>
+		inline void insert(ItemVector::const_iterator it, inputIterator first, inputIterator last) { vec.insert(it, first, last); }
+		inline void insert(ItemVector::const_iterator it, ItemVector::value_type element) { vec.insert(it, element); }
+
+		inline ItemVector::iterator getBeginDownItem() { return begin() + topItemCount; }
+		inline ItemVector::const_iterator getBeginDownItem() const { return begin() + topItemCount; }
+		inline ItemVector::iterator getEndDownItem() noexcept { return end(); }
+		inline ItemVector::const_iterator getEndDownItem() const noexcept { return end(); }
+		inline ItemVector::iterator getBeginTopItem() noexcept { return begin(); }
+		inline ItemVector::const_iterator getBeginTopItem() const noexcept { return begin(); }
+		inline ItemVector::iterator getEndTopItem() { return getBeginDownItem(); }
+		inline ItemVector::const_iterator getEndTopItem() const { return getBeginDownItem(); }
+
+		inline uint32_t getTopItemCount() const noexcept { return topItemCount; }
+		inline uint32_t getDownItemCount() const noexcept { return size() - topItemCount; }
+		inline void addTopItemCount(int32_t increment) noexcept { topItemCount += increment; }
+		inline Item* getTopTopItem() const noexcept {
 			if (topItemCount == 0) {
 				return nullptr;
 			}
 			return *(getEndTopItem() - 1);
 		}
-		inline Item* getTopDownItem() const {
+		inline Item* getTopDownItem() const noexcept {
 			if (getDownItemCount() == 0) {
 				return nullptr;
 			}
 			return *(getEndDownItem() - 1);
 		}
-		void addTopItemCount(int32_t increment) {
-			topItemCount += increment;
-		}
+
+		//Allow implicit conversion to ItemVector&
+		operator ItemVector&() { return vec; }
 
 	private:
+		ItemVector vec;
 		uint16_t topItemCount = 0;
+
 };
 
 class Tile : public Cylinder
