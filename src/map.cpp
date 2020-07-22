@@ -254,7 +254,7 @@ void Map::moveCreature(Creature& creature, Tile& newTile, bool forceTeleport/* =
 	const Position& oldPos = oldTile.getPosition();
 	const Position& newPos = newTile.getPosition();
 
-	bool teleport = forceTeleport || !newTile.getGround() || !Position::areInRange<1, 1, 0>(oldPos, newPos);
+	bool teleport = forceTeleport || !newTile.getGround() || !Position::areInRange<1, 1, 1>(oldPos, newPos);
 
 	SpectatorVector spectators;
 	if (!teleport) {
