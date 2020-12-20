@@ -4338,6 +4338,7 @@ void ProtocolGame::sendPartyPlayerMana(const Player* target, uint8_t manaPercent
 	uint32_t cid = target->getID();
 	if (knownCreatureSet.find(cid) == knownCreatureSet.end()) {
 		sendPartyCreatureUpdate(target);
+		return;
 	}
 
 	playermsg.reset();
