@@ -4354,6 +4354,7 @@ void ProtocolGame::sendPartyCreatureShowStatus(const Creature* target, bool show
 	uint32_t cid = target->getID();
 	if (knownCreatureSet.find(cid) == knownCreatureSet.end()) {
 		sendPartyCreatureUpdate(target);
+		return;
 	}
 
 	playermsg.reset();
