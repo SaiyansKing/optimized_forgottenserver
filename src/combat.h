@@ -94,8 +94,6 @@ struct EffectParams {
 };
 #endif
 
-using CombatFunction = std::function<void(Creature*, Creature*, const CombatParams&, CombatDamage*)>;
-
 class MatrixArea
 {
 	public:
@@ -256,18 +254,6 @@ class Combat
 		Combat(const Combat&) = delete;
 		Combat& operator=(const Combat&) = delete;
 
-		static void doCombatHealth(Creature* caster, Creature* target, CombatDamage& damage, const CombatParams& params);
-		static void doCombatHealth(Creature* caster, const Position& position, const AreaCombat* area, CombatDamage& damage, const CombatParams& params);
-
-		static void doCombatMana(Creature* caster, Creature* target, CombatDamage& damage, const CombatParams& params);
-		static void doCombatMana(Creature* caster, const Position& position, const AreaCombat* area, CombatDamage& damage, const CombatParams& params);
-
-		static void doCombatCondition(Creature* caster, Creature* target, const CombatParams& params);
-		static void doCombatCondition(Creature* caster, const Position& position, const AreaCombat* area, const CombatParams& params);
-
-		static void doCombatDispel(Creature* caster, Creature* target, const CombatParams& params);
-		static void doCombatDispel(Creature* caster, const Position& position, const AreaCombat* area, const CombatParams& params);
-
 		static void getCombatArea(const Position& centerPos, const Position& targetPos, const AreaCombat* area, std::vector<Tile*>& list, bool directionalArea);
 
 		static bool isInPvpZone(const Creature* attacker, const Creature* target);
@@ -284,6 +270,9 @@ class Combat
 
 		void doCombat(Creature* caster, Creature* target) const;
 		void doCombat(Creature* caster, const Position& position) const;
+
+		static void doTargetCombat(Creature* caster, Creature* target, CombatDamage& damage, const CombatParams& params);
+		static void doAreaCombat(Creature* caster, const Position& position, const AreaCombat* area, CombatDamage& damage, const CombatParams& params);
 
 		bool setCallback(CallBackParam_t key);
 		CallBack* getCallback(CallBackParam_t key);
@@ -307,6 +296,7 @@ class Combat
 		void setOrigin(CombatOrigin origin) {
 			params.origin = origin;
 		}
+
 		void setDirectionArea(bool directionalArea) {
 			params.directionalArea = directionalArea;
 		}
@@ -321,16 +311,6 @@ class Combat
 		}
 
 	private:
-		static void doCombatDefault(Creature* caster, Creature* target, const CombatParams& params);
-
-		static void CombatFunc(Creature* caster, const Position& pos, const AreaCombat* area, const CombatParams& params, CombatFunction func, CombatDamage* data);
-
-		static void CombatHealthFunc(Creature* caster, Creature* target, const CombatParams& params, CombatDamage* data);
-		static void CombatManaFunc(Creature* caster, Creature* target, const CombatParams& params, CombatDamage* damage);
-		static void CombatConditionFunc(Creature* caster, Creature* target, const CombatParams& params, CombatDamage* data);
-		static void CombatDispelFunc(Creature* caster, Creature* target, const CombatParams& params, CombatDamage* data);
-		static void CombatNullFunc(Creature* caster, Creature* target, const CombatParams& params, CombatDamage* data);
-
 		#if CLIENT_VERSION >= 1203
 		static void combatTileEffects(const SpectatorVector& spectators, NetworkMessage& effectMsg, EffectParams& effectParams, Creature* caster, Tile* tile, const CombatParams& params);
 		#endif
