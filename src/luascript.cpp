@@ -1301,6 +1301,9 @@ void LuaScriptInterface::registerFunctions()
 	#if GAME_FEATURE_SESSIONKEY > 0
 	registerEnum(GAME_FEATURE_SESSIONKEY)
 	#endif
+	#if GAME_FEATURE_LOGIN_EMAIL > 0
+	registerEnum(GAME_FEATURE_LOGIN_EMAIL)
+	#endif
 	#if GAME_FEATURE_EQUIP_HOTKEY > 0
 	registerEnum(GAME_FEATURE_EQUIP_HOTKEY)
 	#endif

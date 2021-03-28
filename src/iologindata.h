@@ -35,7 +35,11 @@ class IOLoginData
 
 		static bool loginserverAuthentication(const std::string& name, const std::string& password, Account& account);
 		#if GAME_FEATURE_SESSIONKEY > 0
+		#if GAME_FEATURE_LOGIN_EMAIL > 0
+		static uint32_t gameworldAuthentication(const std::string& email, const std::string& password, std::string& characterName, std::string& token, uint32_t tokenTime);
+		#else
 		static uint32_t gameworldAuthentication(const std::string& accountName, const std::string& password, std::string& characterName, std::string& token, uint32_t tokenTime);
+		#endif
 		#else
 		static uint32_t gameworldAuthentication(const std::string& accountName, const std::string& password, std::string& characterName);
 		#endif

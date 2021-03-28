@@ -119,18 +119,33 @@ bool IOLoginData::loginserverAuthentication(const std::string& name, const std::
 	return true;
 }
 
+
 #if GAME_FEATURE_SESSIONKEY > 0
+#if GAME_FEATURE_LOGIN_EMAIL > 0
+uint32_t IOLoginData::gameworldAuthentication(const std::string& email, const std::string& password, std::string& characterName, std::string& token, uint32_t tokenTime)
+#else
 uint32_t IOLoginData::gameworldAuthentication(const std::string& accountName, const std::string& password, std::string& characterName, std::string& token, uint32_t tokenTime)
+#endif
 #else
 uint32_t IOLoginData::gameworldAuthentication(const std::string& accountName, const std::string& password, std::string& characterName)
 #endif
 {
+	#if GAME_FEATURE_LOGIN_EMAIL > 0
+	const std::string& escapedEmail = g_database.escapeString(email);
+	const std::string& escapedCharacterName = g_database.escapeString(characterName);
+	std::stringExtended query(std::max<size_t>(escapedEmail.length(), escapedCharacterName.length()) + static_cast<size_t>(128));
+	#else
 	const std::string& escapedAccountName = g_database.escapeString(accountName);
 	const std::string& escapedCharacterName = g_database.escapeString(characterName);
 	std::stringExtended query(std::max<size_t>(escapedAccountName.length(), escapedCharacterName.length()) + static_cast<size_t>(128));
+	#endif
 
 	#if GAME_FEATURE_SESSIONKEY > 0
+	#if GAME_FEATURE_LOGIN_EMAIL > 0
+	query << "SELECT `id`, `password`, `secret` FROM `accounts` WHERE `email` = " << escapedEmail << " LIMIT 1";
+	#else
 	query << "SELECT `id`, `password`, `secret` FROM `accounts` WHERE `name` = " << escapedAccountName << " LIMIT 1";
+	#endif
 	#else
 	query << "SELECT `id`, `password` FROM `accounts` WHERE `name` = " << escapedAccountName << " LIMIT 1";
 	#endif

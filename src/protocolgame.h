@@ -80,7 +80,11 @@ class ProtocolGame final : public Protocol
 		explicit ProtocolGame(Connection_ptr connection) : Protocol(connection) {}
 
 		#if GAME_FEATURE_SESSIONKEY > 0
+		#if GAME_FEATURE_LOGIN_EMAIL > 0
+		void login(const std::string& email, const std::string& password, std::string& characterName, std::string& token, uint32_t tokenTime, OperatingSystem_t operatingSystem, OperatingSystem_t tfcOperatingSystem);
+		#else
 		void login(const std::string& accountName, const std::string& password, std::string& characterName, std::string& token, uint32_t tokenTime, OperatingSystem_t operatingSystem, OperatingSystem_t tfcOperatingSystem);
+		#endif
 		#else
 		void login(const std::string& accountName, const std::string& password, std::string& characterName, OperatingSystem_t operatingSystem, OperatingSystem_t tfcOperatingSystem);
 		#endif

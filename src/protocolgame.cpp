@@ -64,7 +64,11 @@ void ProtocolGame::release()
 }
 
 #if GAME_FEATURE_SESSIONKEY > 0
+#if GAME_FEATURE_LOGIN_EMAIL > 0
+void ProtocolGame::login(const std::string& email, const std::string& password, std::string& characterName, std::string& token, uint32_t tokenTime, OperatingSystem_t operatingSystem, OperatingSystem_t tfcOperatingSystem)
+#else
 void ProtocolGame::login(const std::string& accountName, const std::string& password, std::string& characterName, std::string& token, uint32_t tokenTime, OperatingSystem_t operatingSystem, OperatingSystem_t tfcOperatingSystem)
+#endif
 #else
 void ProtocolGame::login(const std::string& accountName, const std::string& password, std::string& characterName, OperatingSystem_t operatingSystem, OperatingSystem_t tfcOperatingSystem)
 #endif
@@ -88,11 +92,19 @@ void ProtocolGame::login(const std::string& accountName, const std::string& pass
 	}
 
 	#if GAME_FEATURE_SESSIONKEY > 0
+	#if GAME_FEATURE_LOGIN_EMAIL > 0
+	uint32_t accountId = IOLoginData::gameworldAuthentication(email, password, characterName, token, tokenTime);
+	if (accountId == 0) {
+		disconnectClient("Email or password is not correct.");
+		return;
+	}
+	#else
 	uint32_t accountId = IOLoginData::gameworldAuthentication(accountName, password, characterName, token, tokenTime);
 	if (accountId == 0) {
 		disconnectClient("Account name or password is not correct.");
 		return;
 	}
+	#endif
 	#else
 	uint32_t accountId = IOLoginData::gameworldAuthentication(accountName, password, characterName);
 	if (accountId == 0) {
@@ -361,7 +373,11 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 		return;
 	}
 
+	#if GAME_FEATURE_LOGIN_EMAIL > 0
+	std::string& email = sessionArgs[0];
+	#else
 	std::string& accountName = sessionArgs[0];
+	#endif
 	std::string& password = sessionArgs[1];
 	std::string& token = sessionArgs[2];
 	uint32_t tokenTime = 0;
@@ -383,7 +399,11 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 		msg.getString();
 	}
 	#endif
+
 	#else
+	#if GAME_FEATURE_LOGIN_EMAIL > 0
+	std::string email = msg.getString();
+	#endif
 	#if GAME_FEATURE_ACCOUNT_NAME > 0
 	std::string accountName = msg.getString();
 	#else
@@ -404,10 +424,17 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 		return;
 	}
 
+	#if GAME_FEATURE_LOGIN_EMAIL > 0
+	if (email.empty()) {
+		disconnectClient("You must enter your email.");
+		return;
+	}
+	#else
 	if (accountName.empty()) {
 		disconnectClient("You must enter your account name.");
 		return;
 	}
+	#endif
 
 	if (password.empty()) {
 		disconnectClient("Invalid password.");
@@ -445,7 +472,11 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 	}
 	
 	#if GAME_FEATURE_SESSIONKEY > 0
+	#if GAME_FEATURE_LOGIN_EMAIL > 0
+	g_dispatcher.addTask(std::bind(&ProtocolGame::login, getThis(), std::move(email), std::move(password), std::move(characterName), std::move(token), tokenTime, operatingSystem, TFCoperatingSystem));
+	#else
 	g_dispatcher.addTask(std::bind(&ProtocolGame::login, getThis(), std::move(accountName), std::move(password), std::move(characterName), std::move(token), tokenTime, operatingSystem, TFCoperatingSystem));
+	#endif
 	#else
 	g_dispatcher.addTask(std::bind(&ProtocolGame::login, getThis(), std::move(accountName), std::move(password), std::move(characterName), operatingSystem, TFCoperatingSystem));
 	#endif
